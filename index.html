@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>חידון</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0F3D3E;
+    --bg-deep: #0A2C2D;
+    --card: #FAF3E7;
+    --gold: #E8A33D;
+    --red: #D64550;
+    --ink: #1B2E2E;
+    --ink-soft: #4A5E5E;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Outfit', sans-serif;
+    background: radial-gradient(circle at 50% -10%, var(--bg) 0%, var(--bg-deep) 70%);
+    color: var(--card);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+  }
+  h1, h2, h3, .display{
+    font-family:'Baloo 2', sans-serif;
+  }
+  .screen{
+    width:100%;
+    max-width: 420px;
+    display:none;
+  }
+  .screen.active{ display:block; }
+
+  /* ---- Landing ---- */
+  #landing{ text-align:center; }
+  .wheel-mark{
+    width:96px; height:96px;
+    margin:0 auto 18px;
+    border-radius:50%;
+    background: conic-gradient(var(--gold) 0deg 90deg, var(--red) 90deg 180deg, var(--gold) 180deg 270deg, var(--red) 270deg 360deg);
+    border: 5px solid var(--card);
+    position:relative;
+    animation: spin-slow 14s linear infinite;
+  }
+  .wheel-mark::after{
+    content:"";
+    position:absolute; inset:38%;
+    background:var(--card);
+    border-radius:50%;
+  }
+  @keyframes spin-slow{ to{ transform: rotate(360deg);} }
+  @media (prefers-reduced-motion: reduce){ .wheel-mark{ animation:none; } }
+
+  h1.title{
+    font-size: 2.1rem;
+    font-weight:800;
+    color:var(--card);
+    letter-spacing:0.5px;
+  }
+  .subtitle{
+    color: #BFE3D8;
+    font-size:0.95rem;
+    margin-top:6px;
+    margin-bottom: 34px;
+  }
+  .btn{
+    display:block;
+    width:100%;
+    border:none;
+    border-radius: 16px;
+    padding: 18px 20px;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:1.15rem;
+    cursor:pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:active{ transform: scale(0.97); }
+  .btn-primary{
+    background: var(--gold);
+    color: var(--ink);
+    box-shadow: 0 6px 0 #B97A1E;
+  }
+  .btn-primary:active{ box-shadow: 0 2px 0 #B97A1E; }
+  .btn-secondary{
+    background: transparent;
+    color: var(--card);
+    border: 2px solid rgba(250,243,231,0.35);
+    margin-top: 14px;
+  }
+  .btn-ghost{
+    background: transparent;
+    color: var(--card);
+    border: none;
+    text-decoration: underline;
+    font-family:'Outfit', sans-serif;
+    font-weight:500;
+    font-size: 0.9rem;
+    margin-top: 18px;
+  }
+
+  /* ---- Card shell for sub-screens ---- */
+  .card{
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 22px;
+    padding: 28px 24px;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+  }
+  .eyebrow{
+    font-size:0.78rem;
+    font-weight:600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 6px;
+  }
+  .card h2{
+    font-size:1.5rem;
+    margin-bottom: 18px;
+    color: var(--ink);
+  }
+  input[type=text]{
+    width:100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 2px solid #E3D9C5;
+    background: #FFFDF9;
+    font-family:'Outfit', sans-serif;
+    font-size: 1.05rem;
+    color: var(--ink);
+    margin-bottom: 14px;
+    text-align:center;
+  }
+  input[type=text]:focus{
+    outline: none;
+    border-color: var(--gold);
+  }
+  input.code-input{
+    font-family:'Baloo 2', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 6px;
+    font-weight:700;
+  }
+  .error{
+    color: var(--red);
+    font-size:0.88rem;
+    font-weight:600;
+    margin-bottom: 10px;
+    min-height: 1.1em;
+  }
+
+  /* ---- Lobby (host) ---- */
+  .room-code-box{
+    text-align:center;
+    margin-bottom: 22px;
+  }
+  .room-code-box .label{
+    font-size:0.85rem;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .room-code{
+    font-family:'Baloo 2', sans-serif;
+    font-size: 3rem;
+    font-weight:800;
+    letter-spacing: 10px;
+    color: var(--red);
+  }
+  .player-list{
+    list-style:none;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin: 18px 0;
+    min-height: 40px;
+  }
+  .player-chip{
+    background: var(--bg);
+    color: var(--card);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight:600;
+    font-size:0.9rem;
+  }
+  .empty-hint{
+    color: var(--ink-soft);
+    font-size:0.88rem;
+    text-align:center;
+    padding: 10px 0;
+  }
+  .waiting-pulse{
+    text-align:center;
+    color: var(--ink-soft);
+    font-size:0.95rem;
+    margin-top: 8px;
+  }
+  .waiting-pulse::after{
+    content:"";
+  }
+  .back-link{
+    display:inline-block;
+    margin-top: 16px;
+    color: var(--card);
+    opacity:0.8;
+    text-decoration:underline;
+    font-size:0.88rem;
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+  <!-- מסך פתיחה -->
+  <div id="landing" class="screen active">
+    <div class="wheel-mark"></div>
+    <h1 class="title">חידון הגלגל</h1>
+    <p class="subtitle">שאלות, ניקוד, וגלגל מזל שבוחר מי עונה</p>
+    <button class="btn btn-primary" onclick="goTo('hostCreate')">פתחו חדר חדש (מנהל/ת)</button>
+    <button class="btn btn-secondary" onclick="goTo('playerJoin')">הצטרפו לחדר (שחקן/ית)</button>
+  </div>
+
+  <!-- מסך מנהל: יצירת חדר -->
+  <div id="hostCreate" class="screen">
+    <div class="card">
+      <div class="eyebrow">מנהל/ת</div>
+      <h2>פותחים חדר חדש</h2>
+      <input type="text" id="hostNameInput" placeholder="השם שלך (לדוגמה: דנה)">
+      <div class="error" id="hostCreateError"></div>
+      <button class="btn btn-primary" onclick="createRoom()">צור/י חדר</button>
+    </div>
+    <div style="text-align:center;"><span class="back-link" onclick="goTo('landing')">חזרה</span></div>
+  </div>
+
+  <!-- מסך לובי מנהל -->
+  <div id="hostLobby" class="screen">
+    <div class="card">
+      <div class="eyebrow">חדר פתוח</div>
+      <div class="room-code-box">
+        <div class="label">קוד החדר - תנו אותו לשחקנים</div>
+        <div class="room-code" id="roomCodeDisplay">----</div>
+      </div>
+      <h2 style="font-size:1.1rem; margin-bottom:8px;">שחקנים בחדר (<span id="playerCount">0</span>)</h2>
+      <ul class="player-list" id="playerList"></ul>
+      <div class="empty-hint" id="emptyHint">עדיין אין שחקנים - שלחו להם את הקוד</div>
+    </div>
+  </div>
+
+  <!-- מסך שחקן: הצטרפות -->
+  <div id="playerJoin" class="screen">
+    <div class="card">
+      <div class="eyebrow">שחקן/ית</div>
+      <h2>מצטרפים לחדר</h2>
+      <input type="text" id="joinCodeInput" class="code-input" maxlength="4" placeholder="קוד" oninput="this.value=this.value.toUpperCase()">
+      <input type="text" id="joinNameInput" placeholder="השם שלך">
+      <div class="error" id="joinError"></div>
+      <button class="btn btn-primary" onclick="joinRoom()">הצטרף/י</button>
+    </div>
+    <div style="text-align:center;"><span class="back-link" onclick="goTo('landing')">חזרה</span></div>
+  </div>
+
+  <!-- מסך המתנה שחקן -->
+  <div id="playerWaiting" class="screen">
+    <div class="card" style="text-align:center;">
+      <div class="eyebrow">מחוברים</div>
+      <h2 id="welcomePlayerName">היי!</h2>
+      <p class="waiting-pulse">ממתינים שהמנהל/ת יתחיל/תתחיל את החידון...</p>
+    </div>
+  </div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+  // ===== חיבור ל-Firebase =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyC87kOuctdETlzxERlvxuN-T3lzpq0ts68",
+    authDomain: "rotem-and-tsof.firebaseapp.com",
+    projectId: "rotem-and-tsof",
+    storageBucket: "rotem-and-tsof.firebasestorage.app",
+    messagingSenderId: "1024715762880",
+    appId: "1:1024715762880:web:94e59bacfac34370f1d125"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // ===== ניווט בין מסכים =====
+  function goTo(screenId){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+  }
+
+  // ===== עזרים =====
+  function generateRoomCode(){
+    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // בלי אותיות/ספרות מבלבלות
+    let code = '';
+    for(let i=0;i<4;i++){ code += letters[Math.floor(Math.random()*letters.length)]; }
+    return code;
+  }
+
+  let currentRoomCode = null;
+  let currentPlayerName = null;
+  let unsubscribeLobby = null;
+
+  // ===== מנהל: יצירת חדר =====
+  async function createRoom(){
+    const name = document.getElementById('hostNameInput').value.trim();
+    const errEl = document.getElementById('hostCreateError');
+    errEl.textContent = '';
+    if(!name){ errEl.textContent = 'נא להזין שם'; return; }
+
+    const code = generateRoomCode();
+    const room = {
+      code: code,
+      hostName: name,
+      status: 'lobby',
+      players: [],
+      createdAt: Date.now()
+    };
+
+    try{
+      await db.collection('rooms').doc(code).set(room);
+      currentRoomCode = code;
+      document.getElementById('roomCodeDisplay').textContent = code;
+      goTo('hostLobby');
+      listenToLobby();
+    }catch(e){
+      errEl.textContent = 'שגיאה: ' + (e && e.message ? e.message : e);
+      console.error(e);
+    }
+  }
+
+  function listenToLobby(){
+    if(unsubscribeLobby) unsubscribeLobby();
+    unsubscribeLobby = db.collection('rooms').doc(currentRoomCode).onSnapshot((docSnap) => {
+      if(!docSnap.exists) return;
+      const room = docSnap.data();
+      const listEl = document.getElementById('playerList');
+      const countEl = document.getElementById('playerCount');
+      const emptyHint = document.getElementById('emptyHint');
+      listEl.innerHTML = '';
+      countEl.textContent = room.players.length;
+      emptyHint.style.display = room.players.length === 0 ? 'block' : 'none';
+      room.players.forEach(p => {
+        const li = document.createElement('li');
+        li.className = 'player-chip';
+        li.textContent = p.name;
+        listEl.appendChild(li);
+      });
+    });
+  }
+
+  // ===== שחקן: הצטרפות =====
+  async function joinRoom(){
+    const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+    const name = document.getElementById('joinNameInput').value.trim();
+    const errEl = document.getElementById('joinError');
+    errEl.textContent = '';
+
+    if(!code || code.length !== 4){ errEl.textContent = 'נא להזין קוד בן 4 תווים'; return; }
+    if(!name){ errEl.textContent = 'נא להזין שם'; return; }
+
+    try{
+      const roomRef = db.collection('rooms').doc(code);
+      const docSnap = await roomRef.get();
+      if(!docSnap.exists){ errEl.textContent = 'לא נמצא חדר עם הקוד הזה'; return; }
+      const room = docSnap.data();
+
+      if(room.players.some(p => p.name === name)){
+        errEl.textContent = 'השם הזה כבר תפוס בחדר, נסו שם אחר';
+        return;
+      }
+
+      room.players.push({ name: name, score: 0, joinedAt: Date.now() });
+      await roomRef.set(room);
+
+      currentRoomCode = code;
+      currentPlayerName = name;
+      document.getElementById('welcomePlayerName').textContent = 'היי ' + name + '!';
+      goTo('playerWaiting');
+    }catch(e){
+      errEl.textContent = 'שגיאה: ' + (e && e.message ? e.message : e);
+      console.error(e);
+    }
+  }
+</script>
+</body>
+</html>
