@@ -3,24 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>חידון</title>
+<title>יומולדת לצוף ולרותם</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #0F3D3E;
-    --bg-deep: #0A2C2D;
-    --card: #FAF3E7;
-    --gold: #E8A33D;
-    --red: #D64550;
-    --ink: #1B2E2E;
-    --ink-soft: #4A5E5E;
+    --bg: #FBE4EC;
+    --bg-deep: #F6D2E0;
+    --card: #FFFFFF;
+    --gold: #F0A8C0;
+    --red: #C98FCB;
+    --ink: #5B2C46;
+    --ink-soft: #9B7086;
+    --page-text: #6B3A56;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     font-family:'Outfit', sans-serif;
     background: radial-gradient(circle at 50% -10%, var(--bg) 0%, var(--bg-deep) 70%);
-    color: var(--card);
+    color: var(--page-text);
     min-height:100vh;
     display:flex;
     align-items:center;
@@ -60,11 +61,11 @@
   h1.title{
     font-size: 2.1rem;
     font-weight:800;
-    color:var(--card);
+    color:var(--ink);
     letter-spacing:0.5px;
   }
   .subtitle{
-    color: #BFE3D8;
+    color: var(--ink-soft);
     font-size:0.95rem;
     margin-top:6px;
     margin-bottom: 34px;
@@ -85,18 +86,18 @@
   .btn-primary{
     background: var(--gold);
     color: var(--ink);
-    box-shadow: 0 6px 0 #B97A1E;
+    box-shadow: 0 6px 0 #D97FA0;
   }
-  .btn-primary:active{ box-shadow: 0 2px 0 #B97A1E; }
+  .btn-primary:active{ box-shadow: 0 2px 0 #D97FA0; }
   .btn-secondary{
     background: transparent;
-    color: var(--card);
-    border: 2px solid rgba(250,243,231,0.35);
+    color: var(--ink);
+    border: 2px solid rgba(91,44,70,0.25);
     margin-top: 14px;
   }
   .btn-ghost{
     background: transparent;
-    color: var(--card);
+    color: var(--ink);
     border: none;
     text-decoration: underline;
     font-family:'Outfit', sans-serif;
@@ -111,7 +112,7 @@
     color: var(--ink);
     border-radius: 22px;
     padding: 28px 24px;
-    box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+    box-shadow: 0 10px 30px rgba(91,44,70,0.15);
   }
   .eyebrow{
     font-size:0.78rem;
@@ -183,7 +184,7 @@
   }
   .player-chip{
     background: var(--bg);
-    color: var(--card);
+    color: var(--ink);
     padding: 8px 14px;
     border-radius: 999px;
     font-weight:600;
@@ -207,11 +208,183 @@
   .back-link{
     display:inline-block;
     margin-top: 16px;
-    color: var(--card);
-    opacity:0.8;
+    color: var(--ink);
+    opacity:0.75;
     text-decoration:underline;
     font-size:0.88rem;
     cursor:pointer;
+  }
+
+  /* ---- Question builder & play ---- */
+  .type-toggle{
+    display:flex;
+    gap:8px;
+    margin-bottom: 16px;
+  }
+  .type-btn{
+    flex:1;
+    padding: 12px 8px;
+    border-radius: 12px;
+    border: 2px solid #E3D9C5;
+    background: #FFFDF9;
+    color: var(--ink-soft);
+    font-weight:600;
+    font-size:0.88rem;
+    cursor:pointer;
+    font-family:'Outfit', sans-serif;
+  }
+  .type-btn.active{
+    border-color: var(--gold);
+    background: #FFF3DD;
+    color: var(--ink);
+  }
+  textarea.qtext{
+    width:100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 2px solid #E3D9C5;
+    background: #FFFDF9;
+    font-family:'Outfit', sans-serif;
+    font-size: 1.05rem;
+    color: var(--ink);
+    margin-bottom: 14px;
+    resize: vertical;
+    min-height: 70px;
+  }
+  .points-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 16px;
+  }
+  .points-row label{
+    font-size:0.9rem;
+    color: var(--ink-soft);
+    font-weight:600;
+    white-space:nowrap;
+  }
+  input.points-input{
+    width:90px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 2px solid #E3D9C5;
+    background: #FFFDF9;
+    font-family:'Baloo 2', sans-serif;
+    font-size: 1.1rem;
+    font-weight:700;
+    color: var(--ink);
+    text-align:center;
+  }
+  .option-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 10px;
+  }
+  .option-row input[type=text]{
+    margin-bottom:0;
+    flex:1;
+    text-align:right;
+  }
+  .correct-check{
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 2px solid #C9BC9F;
+    background: #fff;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .correct-check.selected{
+    background: #4C9A6A;
+    border-color: #4C9A6A;
+  }
+
+  /* live question display */
+  .live-question-text{
+    font-size:1.3rem;
+    font-weight:700;
+    color: var(--ink);
+    margin-bottom: 10px;
+    line-height:1.4;
+  }
+  .points-pill{
+    display:inline-block;
+    background: var(--gold);
+    color: var(--ink);
+    font-weight:700;
+    font-size:0.85rem;
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+  .answer-btn{
+    display:block;
+    width:100%;
+    text-align:right;
+    padding: 16px 18px;
+    border-radius: 14px;
+    border: 2px solid #E3D9C5;
+    background: #FFFDF9;
+    color: var(--ink);
+    font-family:'Outfit', sans-serif;
+    font-weight:600;
+    font-size:1.02rem;
+    margin-bottom: 10px;
+    cursor:pointer;
+  }
+  .answer-btn:active{ transform: scale(0.98); }
+  .answer-btn.correct{
+    background: #DFF3E6;
+    border-color: #4C9A6A;
+  }
+  .answer-btn.wrong{
+    background: #FBE1E1;
+    border-color: var(--red);
+  }
+  .answer-btn.chosen{
+    box-shadow: 0 0 0 3px var(--gold) inset;
+  }
+  .progress-line{
+    text-align:center;
+    color: var(--ink-soft);
+    font-size:0.9rem;
+    margin-bottom: 16px;
+  }
+  .player-award-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background: var(--bg);
+    color: var(--ink);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+  }
+  .player-award-row span.pname{ font-weight:600; }
+  .award-btn{
+    background: var(--gold);
+    color: var(--ink);
+    border:none;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-weight:700;
+    font-size:0.82rem;
+    cursor:pointer;
+  }
+  .result-banner{
+    text-align:center;
+    font-family:'Baloo 2', sans-serif;
+    font-size:1.6rem;
+    font-weight:800;
+    margin-bottom: 8px;
+  }
+  .result-banner.correct{ color:#2F8F53; }
+  .result-banner.wrong{ color: var(--red); }
+  .score-line{
+    text-align:center;
+    color: var(--ink-soft);
+    font-size:1rem;
+    margin-top: 10px;
   }
 </style>
 </head>
@@ -220,8 +393,8 @@
   <!-- מסך פתיחה -->
   <div id="landing" class="screen active">
     <div class="wheel-mark"></div>
-    <h1 class="title">חידון הגלגל</h1>
-    <p class="subtitle">שאלות, ניקוד, וגלגל מזל שבוחר מי עונה</p>
+    <h1 class="title">יומולדת לצוף ולרותם</h1>
+    <p class="subtitle">תתכוננו לערב מרגש</p>
     <button class="btn btn-primary" onclick="goTo('hostCreate')">פתחו חדר חדש (מנהל/ת)</button>
     <button class="btn btn-secondary" onclick="goTo('playerJoin')">הצטרפו לחדר (שחקן/ית)</button>
   </div>
@@ -249,6 +422,78 @@
       <h2 style="font-size:1.1rem; margin-bottom:8px;">שחקנים בחדר (<span id="playerCount">0</span>)</h2>
       <ul class="player-list" id="playerList"></ul>
       <div class="empty-hint" id="emptyHint">עדיין אין שחקנים - שלחו להם את הקוד</div>
+      <button class="btn btn-primary" onclick="goTo('hostCreateQuestion')" style="margin-top:10px;">התחילו את החידון</button>
+    </div>
+  </div>
+
+  <!-- מסך מנהל: יצירת שאלה -->
+  <div id="hostCreateQuestion" class="screen">
+    <div class="card">
+      <div class="eyebrow">מנהל/ת</div>
+      <h2>שאלה חדשה</h2>
+      <div class="type-toggle">
+        <button type="button" class="type-btn active" id="typeBtnMc" onclick="setQuestionType('mc')">עם אפשרויות</button>
+        <button type="button" class="type-btn" id="typeBtnOpen" onclick="setQuestionType('open')">שאלה פתוחה</button>
+      </div>
+      <textarea class="qtext" id="questionTextInput" placeholder="כתבו כאן את השאלה..."></textarea>
+      <div class="points-row">
+        <label for="pointsInput">ניקוד לשאלה:</label>
+        <input type="number" class="points-input" id="pointsInput" value="100" min="10" step="10">
+      </div>
+      <div id="optionsContainer">
+        <div class="option-row">
+          <button type="button" class="correct-check" data-index="0" onclick="selectCorrect(0)"></button>
+          <input type="text" placeholder="אפשרות 1">
+        </div>
+        <div class="option-row">
+          <button type="button" class="correct-check" data-index="1" onclick="selectCorrect(1)"></button>
+          <input type="text" placeholder="אפשרות 2">
+        </div>
+        <div class="option-row">
+          <button type="button" class="correct-check" data-index="2" onclick="selectCorrect(2)"></button>
+          <input type="text" placeholder="אפשרות 3">
+        </div>
+        <div class="option-row">
+          <button type="button" class="correct-check" data-index="3" onclick="selectCorrect(3)"></button>
+          <input type="text" placeholder="אפשרות 4">
+        </div>
+      </div>
+      <div class="error" id="questionError"></div>
+      <button class="btn btn-primary" onclick="sendQuestion()">שלחו שאלה לשחקנים</button>
+    </div>
+  </div>
+
+  <!-- מסך מנהל: השאלה באוויר -->
+  <div id="hostQuestionLive" class="screen">
+    <div class="card">
+      <div class="eyebrow" id="liveEyebrow">השאלה באוויר</div>
+      <div class="live-question-text" id="liveQuestionText"></div>
+      <div class="points-pill" id="livePointsPill"></div>
+      <div class="progress-line" id="answeredProgress"></div>
+      <div id="mcHostArea"></div>
+      <div id="openHostArea"></div>
+      <button class="btn btn-primary" id="revealBtn" onclick="revealResults()" style="margin-top:10px;">הצג תוצאות ונקדו</button>
+      <button class="btn btn-secondary" id="nextQBtn" onclick="goTo('hostCreateQuestion')" style="display:none;">שאלה הבאה</button>
+    </div>
+  </div>
+
+  <!-- מסך שחקן: שאלה חיה -->
+  <div id="playerQuestion" class="screen">
+    <div class="card">
+      <div class="eyebrow">שאלה!</div>
+      <div class="live-question-text" id="pqText"></div>
+      <div class="points-pill" id="pqPoints"></div>
+      <div id="pqMcArea"></div>
+      <div id="pqOpenArea" style="text-align:center; color:var(--ink-soft); padding:20px 0;"></div>
+    </div>
+  </div>
+
+  <!-- מסך שחקן: תוצאה -->
+  <div id="playerResult" class="screen">
+    <div class="card" style="text-align:center;">
+      <div class="result-banner" id="resultBanner"></div>
+      <div class="score-line" id="resultScoreLine"></div>
+      <p class="waiting-pulse" style="margin-top:16px;">ממתינים לשאלה הבאה...</p>
     </div>
   </div>
 
@@ -384,10 +629,266 @@
       currentPlayerName = name;
       document.getElementById('welcomePlayerName').textContent = 'היי ' + name + '!';
       goTo('playerWaiting');
+      listenAsPlayer();
     }catch(e){
       errEl.textContent = 'שגיאה: ' + (e && e.message ? e.message : e);
       console.error(e);
     }
+  }
+
+  // ===================== שלב 2: שאלות וניקוד =====================
+
+  let selectedQuestionType = 'mc';
+  let selectedCorrectIndex = null;
+  let hasAnsweredCurrent = false;
+  let lastSeenQuestionId = null;
+  let unsubscribePlayer = null;
+  let unsubscribeHostQuestion = null;
+
+  function setQuestionType(type){
+    selectedQuestionType = type;
+    document.getElementById('typeBtnMc').classList.toggle('active', type === 'mc');
+    document.getElementById('typeBtnOpen').classList.toggle('active', type === 'open');
+    document.getElementById('optionsContainer').style.display = type === 'mc' ? 'block' : 'none';
+  }
+
+  function selectCorrect(index){
+    selectedCorrectIndex = index;
+    document.querySelectorAll('.correct-check').forEach(btn => {
+      btn.classList.toggle('selected', parseInt(btn.dataset.index) === index);
+    });
+  }
+
+  // ===== מנהל: שליחת שאלה =====
+  async function sendQuestion(){
+    const text = document.getElementById('questionTextInput').value.trim();
+    const points = parseInt(document.getElementById('pointsInput').value) || 100;
+    const errEl = document.getElementById('questionError');
+    errEl.textContent = '';
+
+    if(!text){ errEl.textContent = 'נא לכתוב שאלה'; return; }
+
+    let options = [];
+    if(selectedQuestionType === 'mc'){
+      const inputs = document.querySelectorAll('#optionsContainer input[type=text]');
+      options = Array.from(inputs).map(i => i.value.trim());
+      if(options.some(o => !o)){ errEl.textContent = 'נא למלא את כל 4 האפשרויות'; return; }
+      if(selectedCorrectIndex === null){ errEl.textContent = 'נא לסמן איזו אפשרות נכונה (העיגול לצידה)'; return; }
+    }
+
+    const questionId = 'q' + Date.now();
+    const currentQuestion = {
+      id: questionId,
+      type: selectedQuestionType,
+      text: text,
+      points: points,
+      options: options,
+      correctIndex: selectedQuestionType === 'mc' ? selectedCorrectIndex : null,
+      answers: [],
+      revealed: false
+    };
+
+    try{
+      await db.collection('rooms').doc(currentRoomCode).update({
+        status: 'question',
+        currentQuestion: currentQuestion
+      });
+
+      // איפוס טופס לשאלה הבאה
+      document.getElementById('questionTextInput').value = '';
+      document.querySelectorAll('#optionsContainer input[type=text]').forEach(i => i.value = '');
+      selectedCorrectIndex = null;
+      document.querySelectorAll('.correct-check').forEach(b => b.classList.remove('selected'));
+
+      renderHostLiveQuestion(currentQuestion, []);
+      document.getElementById('revealBtn').style.display = 'block';
+      document.getElementById('nextQBtn').style.display = 'none';
+      goTo('hostQuestionLive');
+      listenAsHostQuestion();
+    }catch(e){
+      errEl.textContent = 'שגיאה: ' + (e && e.message ? e.message : e);
+      console.error(e);
+    }
+  }
+
+  function listenAsHostQuestion(){
+    if(unsubscribeHostQuestion) unsubscribeHostQuestion();
+    unsubscribeHostQuestion = db.collection('rooms').doc(currentRoomCode).onSnapshot((docSnap) => {
+      if(!docSnap.exists) return;
+      const room = docSnap.data();
+      if(!room.currentQuestion) return;
+      renderHostLiveQuestion(room.currentQuestion, room.players || []);
+    });
+  }
+
+  function renderHostLiveQuestion(q, players){
+    document.getElementById('liveQuestionText').textContent = q.text;
+    document.getElementById('livePointsPill').textContent = q.points + ' נקודות';
+    document.getElementById('answeredProgress').textContent = 'ענו ' + q.answers.length + ' מתוך ' + players.length + ' שחקנים';
+
+    const mcArea = document.getElementById('mcHostArea');
+    const openArea = document.getElementById('openHostArea');
+
+    if(q.type === 'mc'){
+      openArea.innerHTML = '';
+      mcArea.innerHTML = '';
+      q.options.forEach((opt, idx) => {
+        const div = document.createElement('div');
+        div.className = 'answer-btn' + (q.revealed && idx === q.correctIndex ? ' correct' : '');
+        div.textContent = opt;
+        mcArea.appendChild(div);
+      });
+    } else {
+      mcArea.innerHTML = '';
+      openArea.innerHTML = '';
+      players.forEach(p => {
+        const row = document.createElement('div');
+        row.className = 'player-award-row';
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'pname';
+        nameSpan.textContent = p.name;
+        row.appendChild(nameSpan);
+        if(!q.revealed){
+          const btn = document.createElement('button');
+          btn.className = 'award-btn';
+          btn.textContent = 'נכון! +' + q.points;
+          btn.onclick = () => awardOpenPoint(p.name, q.points);
+          row.appendChild(btn);
+        }
+        openArea.appendChild(row);
+      });
+    }
+  }
+
+  // מנהל מסמן ידנית מי צדק בשאלה פתוחה (עד שנבנה את גלגל המזל)
+  async function awardOpenPoint(playerName, points){
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const players = room.players.map(p => p.name === playerName ? {...p, score: (p.score || 0) + points} : p);
+      const cq = room.currentQuestion;
+      cq.revealed = true;
+      cq.correctPlayerName = playerName;
+      await roomRef.update({ players: players, currentQuestion: cq, status: 'results' });
+      document.getElementById('revealBtn').style.display = 'none';
+      document.getElementById('nextQBtn').style.display = 'block';
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  // מנהל מנקד שאלה עם אפשרויות
+  async function revealResults(){
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const cq = room.currentQuestion;
+
+      if(cq.type === 'mc'){
+        const players = room.players.map(p => {
+          const ans = cq.answers.find(a => a.name === p.name);
+          if(ans && ans.optionIndex === cq.correctIndex){
+            return { ...p, score: (p.score || 0) + cq.points };
+          }
+          return p;
+        });
+        cq.revealed = true;
+        await roomRef.update({ players: players, currentQuestion: cq, status: 'results' });
+      }
+
+      document.getElementById('revealBtn').style.display = 'none';
+      document.getElementById('nextQBtn').style.display = 'block';
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  // ===== שחקן: מאזין למצב החדר =====
+  function listenAsPlayer(){
+    if(unsubscribePlayer) unsubscribePlayer();
+    unsubscribePlayer = db.collection('rooms').doc(currentRoomCode).onSnapshot((docSnap) => {
+      if(!docSnap.exists) return;
+      const room = docSnap.data();
+
+      if(room.status === 'question' && room.currentQuestion){
+        if(lastSeenQuestionId !== room.currentQuestion.id){
+          lastSeenQuestionId = room.currentQuestion.id;
+          hasAnsweredCurrent = false;
+        }
+        if(!hasAnsweredCurrent){
+          renderPlayerQuestion(room.currentQuestion);
+          goTo('playerQuestion');
+        }
+      } else if(room.status === 'results' && room.currentQuestion){
+        renderPlayerResult(room.currentQuestion, room.players || []);
+        goTo('playerResult');
+      } else if(room.status === 'lobby'){
+        goTo('playerWaiting');
+      }
+    });
+  }
+
+  function renderPlayerQuestion(q){
+    document.getElementById('pqText').textContent = q.text;
+    document.getElementById('pqPoints').textContent = q.points + ' נקודות';
+    const mcArea = document.getElementById('pqMcArea');
+    const openArea = document.getElementById('pqOpenArea');
+    mcArea.innerHTML = '';
+    openArea.innerHTML = '';
+
+    if(q.type === 'mc'){
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'answer-btn';
+        btn.textContent = opt;
+        btn.onclick = () => submitAnswer(idx, btn);
+        mcArea.appendChild(btn);
+      });
+    } else {
+      openArea.textContent = 'השאלה מוצגת אצל המנהל/ת - ענו בקול רם!';
+    }
+  }
+
+  async function submitAnswer(optionIndex, btnEl){
+    if(hasAnsweredCurrent) return;
+    hasAnsweredCurrent = true;
+    document.querySelectorAll('#pqMcArea .answer-btn').forEach(b => b.disabled = true);
+    btnEl.classList.add('chosen');
+
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const cq = room.currentQuestion;
+      if(!cq.answers.some(a => a.name === currentPlayerName)){
+        cq.answers.push({ name: currentPlayerName, optionIndex: optionIndex });
+      }
+      await roomRef.update({ 'currentQuestion': cq });
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  function renderPlayerResult(q, players){
+    const me = players.find(p => p.name === currentPlayerName);
+    const banner = document.getElementById('resultBanner');
+    const scoreLine = document.getElementById('resultScoreLine');
+
+    if(q.type === 'mc'){
+      const myAnswer = q.answers.find(a => a.name === currentPlayerName);
+      const wasCorrect = myAnswer && myAnswer.optionIndex === q.correctIndex;
+      banner.textContent = wasCorrect ? 'כל הכבוד, תשובה נכונה!' : 'לא נורא, פעם הבאה!';
+      banner.className = 'result-banner ' + (wasCorrect ? 'correct' : 'wrong');
+    } else {
+      const wasCorrect = q.correctPlayerName === currentPlayerName;
+      banner.textContent = wasCorrect ? 'כל הכבוד, ענית נכון!' : 'הפעם ענה מישהו אחר';
+      banner.className = 'result-banner ' + (wasCorrect ? 'correct' : 'wrong');
+    }
+
+    scoreLine.textContent = 'הניקוד שלך: ' + (me ? (me.score || 0) : 0);
   }
 </script>
 </body>
