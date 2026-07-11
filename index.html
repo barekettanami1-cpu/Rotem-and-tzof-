@@ -386,6 +386,137 @@
     font-size:1rem;
     margin-top: 10px;
   }
+
+  /* ---- Wheel of fortune ---- */
+  .wheel-stage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 10px 0 6px;
+  }
+  .wheel-pointer{
+    width:0; height:0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 22px solid var(--ink);
+    margin-bottom: -4px;
+    z-index:2;
+  }
+  .wheel-outer{
+    width: 260px; height: 260px;
+    border-radius:50%;
+    border: 6px solid var(--card);
+    box-shadow: 0 8px 24px rgba(91,44,70,0.25);
+    position:relative;
+    overflow:hidden;
+  }
+  .wheel-disc{
+    width:100%; height:100%;
+    border-radius:50%;
+    position:relative;
+    transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+  }
+  .wheel-label{
+    position:absolute;
+    top:50%; left:50%;
+    width: 100px;
+    text-align:right;
+    font-size:0.78rem;
+    font-weight:700;
+    color:#fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    transform-origin: 0 0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .wheel-hub{
+    position:absolute;
+    top:50%; left:50%;
+    width:36px; height:36px;
+    transform:translate(-50%,-50%);
+    background: var(--card);
+    border-radius:50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    z-index:2;
+  }
+  .wheel-caption{
+    text-align:center;
+    margin-top: 18px;
+    color: var(--ink-soft);
+    font-size:0.95rem;
+  }
+  .wheel-winner-name{
+    font-family:'Baloo 2', sans-serif;
+    font-size:1.4rem;
+    font-weight:800;
+    color: var(--ink);
+    margin-top: 4px;
+  }
+
+  /* ---- Media in questions ---- */
+  .question-media{
+    width:100%;
+    border-radius: 14px;
+    margin-bottom: 14px;
+    overflow:hidden;
+    background:#00000010;
+  }
+  .question-media img, .question-media video{
+    width:100%;
+    display:block;
+    max-height: 220px;
+    object-fit: cover;
+  }
+  .question-media iframe{
+    width:100%;
+    height: 200px;
+    border:none;
+    display:block;
+  }
+  input.media-input{
+    width:100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 2px solid #E3D9C5;
+    background: #FFFDF9;
+    font-family:'Outfit', sans-serif;
+    font-size: 0.95rem;
+    color: var(--ink);
+    margin-bottom: 14px;
+    direction: ltr;
+    text-align:right;
+  }
+
+  /* ---- Round leaderboard ---- */
+  .leaderboard-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding: 10px 14px;
+    border-radius: 12px;
+    margin-bottom: 6px;
+    background: #FFF3F8;
+    font-weight:600;
+  }
+  .leaderboard-row.me{
+    background: var(--gold);
+  }
+  .leaderboard-rank{
+    font-weight:800;
+    margin-left: 8px;
+  }
+  .section-title{
+    font-size:0.95rem;
+    font-weight:700;
+    color: var(--ink-soft);
+    margin: 16px 0 8px;
+  }
+  .celebrate-emoji{
+    text-align:center;
+    font-size:2rem;
+    margin-bottom: 6px;
+  }
 </style>
 </head>
 <body>
@@ -422,8 +553,21 @@
       <h2 style="font-size:1.1rem; margin-bottom:8px;">שחקנים בחדר (<span id="playerCount">0</span>)</h2>
       <ul class="player-list" id="playerList"></ul>
       <div class="empty-hint" id="emptyHint">עדיין אין שחקנים - שלחו להם את הקוד</div>
-      <button class="btn btn-primary" onclick="goTo('hostCreateQuestion')" style="margin-top:10px;">התחילו את החידון</button>
+      <button class="btn btn-primary" onclick="goTo('hostQuestionBank'); refreshBankView();" style="margin-top:10px;">הכינו שאלות והתחילו</button>
     </div>
+  </div>
+
+  <!-- מסך מנהל: בנק השאלות -->
+  <div id="hostQuestionBank" class="screen">
+    <div class="card">
+      <div class="eyebrow">מנהל/ת</div>
+      <h2>השאלות שלכם</h2>
+      <div id="bankList" style="margin-bottom:16px;"></div>
+      <div class="empty-hint" id="bankEmptyHint">עדיין לא הוספתם שאלות</div>
+      <button class="btn btn-secondary" onclick="goTo('hostCreateQuestion')">הוסיפו שאלה</button>
+      <button class="btn btn-primary" id="startQuizBtn" onclick="startQuizFromBank()" style="margin-top:12px; display:none;">התחילו את החידון</button>
+    </div>
+    <div style="text-align:center;"><span class="back-link" onclick="goTo('hostLobby')">חזרה לחדר</span></div>
   </div>
 
   <!-- מסך מנהל: יצירת שאלה -->
@@ -436,6 +580,7 @@
         <button type="button" class="type-btn" id="typeBtnOpen" onclick="setQuestionType('open')">שאלה פתוחה</button>
       </div>
       <textarea class="qtext" id="questionTextInput" placeholder="כתבו כאן את השאלה..."></textarea>
+      <input type="text" class="media-input" id="mediaUrlInput" placeholder="קישור לתמונה/סרטון/יוטיוב (רשות)">
       <div class="points-row">
         <label for="pointsInput">ניקוד לשאלה:</label>
         <input type="number" class="points-input" id="pointsInput" value="100" min="10" step="10">
@@ -459,7 +604,40 @@
         </div>
       </div>
       <div class="error" id="questionError"></div>
-      <button class="btn btn-primary" onclick="sendQuestion()">שלחו שאלה לשחקנים</button>
+      <button class="btn btn-primary" onclick="addQuestionToBank()">הוסיפו לרשימת השאלות</button>
+    </div>
+    <div style="text-align:center;"><span class="back-link" onclick="goTo('hostQuestionBank')">חזרה לרשימה</span></div>
+  </div>
+
+  <!-- מסך מנהל: גלגל המזל -->
+  <div id="hostWheel" class="screen">
+    <div class="card">
+      <div class="eyebrow">בוחרים מי עונה...</div>
+      <div class="wheel-stage">
+        <div class="wheel-pointer"></div>
+        <div class="wheel-outer">
+          <div class="wheel-disc" id="hostWheelDisc"></div>
+          <div class="wheel-hub"></div>
+        </div>
+      </div>
+      <div class="wheel-caption">הגלגל בוחר שחקן/ית...</div>
+      <div class="wheel-winner-name" id="hostWheelWinnerName" style="text-align:center;"></div>
+    </div>
+  </div>
+
+  <!-- מסך שחקן: גלגל המזל -->
+  <div id="playerWheel" class="screen">
+    <div class="card">
+      <div class="eyebrow">בוחרים מי עונה...</div>
+      <div class="wheel-stage">
+        <div class="wheel-pointer"></div>
+        <div class="wheel-outer">
+          <div class="wheel-disc" id="playerWheelDisc"></div>
+          <div class="wheel-hub"></div>
+        </div>
+      </div>
+      <div class="wheel-caption">מי יזכה לענות?</div>
+      <div class="wheel-winner-name" id="playerWheelWinnerName" style="text-align:center;"></div>
     </div>
   </div>
 
@@ -467,13 +645,24 @@
   <div id="hostQuestionLive" class="screen">
     <div class="card">
       <div class="eyebrow" id="liveEyebrow">השאלה באוויר</div>
+      <div id="liveMediaContainer"></div>
       <div class="live-question-text" id="liveQuestionText"></div>
       <div class="points-pill" id="livePointsPill"></div>
       <div class="progress-line" id="answeredProgress"></div>
       <div id="mcHostArea"></div>
       <div id="openHostArea"></div>
       <button class="btn btn-primary" id="revealBtn" onclick="revealResults()" style="margin-top:10px;">הצג תוצאות ונקדו</button>
-      <button class="btn btn-secondary" id="nextQBtn" onclick="goTo('hostCreateQuestion')" style="display:none;">שאלה הבאה</button>
+      <div id="hostRoundLeaderboard"></div>
+      <button class="btn btn-secondary" id="nextQBtn" onclick="nextQuestionFromBank()" style="display:none;">שאלה הבאה</button>
+    </div>
+  </div>
+
+  <!-- מסך מנהל: סיום החידון -->
+  <div id="hostQuizEnd" class="screen">
+    <div class="card" style="text-align:center;">
+      <div class="eyebrow">סיום</div>
+      <h2>החידון נגמר!</h2>
+      <div id="finalLeaderboard"></div>
     </div>
   </div>
 
@@ -481,6 +670,7 @@
   <div id="playerQuestion" class="screen">
     <div class="card">
       <div class="eyebrow">שאלה!</div>
+      <div id="pqMediaContainer"></div>
       <div class="live-question-text" id="pqText"></div>
       <div class="points-pill" id="pqPoints"></div>
       <div id="pqMcArea"></div>
@@ -491,9 +681,22 @@
   <!-- מסך שחקן: תוצאה -->
   <div id="playerResult" class="screen">
     <div class="card" style="text-align:center;">
+      <div class="celebrate-emoji" id="resultEmoji"></div>
       <div class="result-banner" id="resultBanner"></div>
       <div class="score-line" id="resultScoreLine"></div>
+      <div id="playerRoundLeaderboard"></div>
       <p class="waiting-pulse" style="margin-top:16px;">ממתינים לשאלה הבאה...</p>
+    </div>
+  </div>
+
+  <!-- מסך שחקן: סיום -->
+  <div id="playerFinished" class="screen">
+    <div class="card" style="text-align:center;">
+      <div class="eyebrow">סיום</div>
+      <h2>החידון נגמר!</h2>
+      <p class="score-line" id="pfRank" style="font-size:1.2rem; font-weight:700; color:var(--ink);"></p>
+      <p class="score-line" id="pfScore"></p>
+      <div id="pfLeaderboard" style="margin-top:14px;"></div>
     </div>
   </div>
 
@@ -642,6 +845,7 @@
   let selectedCorrectIndex = null;
   let hasAnsweredCurrent = false;
   let lastSeenQuestionId = null;
+  let lastSeenWheelId = null;
   let unsubscribePlayer = null;
   let unsubscribeHostQuestion = null;
 
@@ -659,10 +863,11 @@
     });
   }
 
-  // ===== מנהל: שליחת שאלה =====
-  async function sendQuestion(){
+  // ===== מנהל: הוספת שאלה לרשימה (בנק שאלות) =====
+  async function addQuestionToBank(){
     const text = document.getElementById('questionTextInput').value.trim();
     const points = parseInt(document.getElementById('pointsInput').value) || 100;
+    const mediaUrl = document.getElementById('mediaUrlInput').value.trim();
     const errEl = document.getElementById('questionError');
     errEl.textContent = '';
 
@@ -676,39 +881,261 @@
       if(selectedCorrectIndex === null){ errEl.textContent = 'נא לסמן איזו אפשרות נכונה (העיגול לצידה)'; return; }
     }
 
-    const questionId = 'q' + Date.now();
-    const currentQuestion = {
-      id: questionId,
+    const bankQuestion = {
       type: selectedQuestionType,
       text: text,
       points: points,
+      mediaUrl: mediaUrl,
       options: options,
-      correctIndex: selectedQuestionType === 'mc' ? selectedCorrectIndex : null,
-      answers: [],
-      revealed: false
+      correctIndex: selectedQuestionType === 'mc' ? selectedCorrectIndex : null
     };
 
     try{
-      await db.collection('rooms').doc(currentRoomCode).update({
-        status: 'question',
-        currentQuestion: currentQuestion
-      });
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const bank = room.questionBank || [];
+      bank.push(bankQuestion);
+      await roomRef.update({ questionBank: bank });
 
-      // איפוס טופס לשאלה הבאה
+      // איפוס טופס
       document.getElementById('questionTextInput').value = '';
+      document.getElementById('mediaUrlInput').value = '';
       document.querySelectorAll('#optionsContainer input[type=text]').forEach(i => i.value = '');
       selectedCorrectIndex = null;
       document.querySelectorAll('.correct-check').forEach(b => b.classList.remove('selected'));
+      setQuestionType('mc');
 
-      renderHostLiveQuestion(currentQuestion, []);
-      document.getElementById('revealBtn').style.display = 'block';
-      document.getElementById('nextQBtn').style.display = 'none';
-      goTo('hostQuestionLive');
-      listenAsHostQuestion();
+      goTo('hostQuestionBank');
+      refreshBankView();
     }catch(e){
       errEl.textContent = 'שגיאה: ' + (e && e.message ? e.message : e);
       console.error(e);
     }
+  }
+
+  async function refreshBankView(){
+    try{
+      const docSnap = await db.collection('rooms').doc(currentRoomCode).get();
+      const room = docSnap.data();
+      const bank = room.questionBank || [];
+      const listEl = document.getElementById('bankList');
+      const emptyHint = document.getElementById('bankEmptyHint');
+      const startBtn = document.getElementById('startQuizBtn');
+      listEl.innerHTML = '';
+      emptyHint.style.display = bank.length === 0 ? 'block' : 'none';
+      startBtn.style.display = bank.length === 0 ? 'none' : 'block';
+
+      bank.forEach((q, idx) => {
+        const row = document.createElement('div');
+        row.className = 'player-award-row';
+        const label = document.createElement('span');
+        label.className = 'pname';
+        const icon = q.type === 'open' ? '🎯 ' : '📝 ';
+        const mediaIcon = q.mediaUrl ? ' 🖼️' : '';
+        label.textContent = (idx + 1) + '. ' + icon + q.text + ' (' + q.points + ' נק׳)' + mediaIcon;
+        row.appendChild(label);
+        listEl.appendChild(row);
+      });
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  function buildLiveQuestionFromBank(bankQuestion){
+    return {
+      id: 'q' + Date.now(),
+      type: bankQuestion.type,
+      text: bankQuestion.text,
+      points: bankQuestion.points,
+      mediaUrl: bankQuestion.mediaUrl || '',
+      options: bankQuestion.options,
+      correctIndex: bankQuestion.correctIndex,
+      answers: [],
+      revealed: false,
+      wheelWinner: null,
+      wheelRotation: null
+    };
+  }
+
+  // ===== מדיה: תמונה / וידאו / יוטיוב =====
+  function renderMediaInto(containerEl, url){
+    containerEl.innerHTML = '';
+    if(!url) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'question-media';
+
+    let ytId = null;
+    const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/shorts\/)([A-Za-z0-9_-]{6,})/);
+    if(ytMatch) ytId = ytMatch[1];
+
+    if(ytId){
+      const iframe = document.createElement('iframe');
+      iframe.src = 'https://www.youtube.com/embed/' + ytId;
+      iframe.allow = 'autoplay; encrypted-media';
+      iframe.allowFullscreen = true;
+      wrap.appendChild(iframe);
+    } else if(/\.(mp4|webm|mov)(\?.*)?$/i.test(url)){
+      const video = document.createElement('video');
+      video.src = url;
+      video.controls = true;
+      wrap.appendChild(video);
+    } else {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = 'תמונת שאלה';
+      wrap.appendChild(img);
+    }
+    containerEl.appendChild(wrap);
+  }
+
+  // ===== גלגל המזל =====
+  function pickWheelWinnerAndRotation(players){
+    const n = players.length;
+    const winnerIndex = Math.floor(Math.random() * n);
+    const sliceAngle = 360 / n;
+    const centerAngle = winnerIndex * sliceAngle + sliceAngle / 2;
+    const extraSpins = 5;
+    const rotation = extraSpins * 360 + (360 - centerAngle);
+    return { winnerIndex: winnerIndex, rotation: rotation };
+  }
+
+  const WHEEL_COLORS = ['#F0A8C0', '#C98FCB', '#F7C6D9', '#B584C4'];
+
+  function renderWheelDisc(discEl, players){
+    const n = players.length;
+    const sliceAngle = 360 / n;
+    let gradientParts = [];
+    for(let i = 0; i < n; i++){
+      const color = WHEEL_COLORS[i % WHEEL_COLORS.length];
+      gradientParts.push(color + ' ' + (i * sliceAngle) + 'deg ' + ((i + 1) * sliceAngle) + 'deg');
+    }
+    discEl.style.background = 'conic-gradient(' + gradientParts.join(',') + ')';
+    discEl.style.transform = 'rotate(0deg)';
+    discEl.innerHTML = '';
+
+    players.forEach((p, i) => {
+      const centerAngle = i * sliceAngle + sliceAngle / 2;
+      const label = document.createElement('div');
+      label.className = 'wheel-label';
+      label.textContent = p.name;
+      label.style.transform = 'rotate(' + centerAngle + 'deg) translateX(20px)';
+      discEl.appendChild(label);
+    });
+  }
+
+  function spinWheelDisc(discEl, rotationDeg){
+    // כפיית reflow כדי שהאנימציה תתחיל מ-0 בכל פעם
+    discEl.getBoundingClientRect();
+    requestAnimationFrame(() => {
+      discEl.style.transform = 'rotate(' + rotationDeg + 'deg)';
+    });
+  }
+
+  // ===== מנהל: השקת שאלה (עם גלגל אם צריך) =====
+  async function launchQuestion(currentQuestion, room, index){
+    const roomRef = db.collection('rooms').doc(currentRoomCode);
+
+    if(currentQuestion.type === 'open' && (room.players || []).length > 0){
+      const players = room.players;
+      const { winnerIndex, rotation } = pickWheelWinnerAndRotation(players);
+      currentQuestion.wheelWinner = players[winnerIndex].name;
+      currentQuestion.wheelRotation = rotation;
+      currentQuestion.wheelPlayersSnapshot = players.map(p => p.name);
+
+      await roomRef.update({
+        status: 'wheel',
+        currentQuestionIndex: index,
+        currentQuestion: currentQuestion
+      });
+
+      const discEl = document.getElementById('hostWheelDisc');
+      renderWheelDisc(discEl, players);
+      document.getElementById('hostWheelWinnerName').textContent = '';
+      goTo('hostWheel');
+      spinWheelDisc(discEl, rotation);
+
+      setTimeout(async () => {
+        document.getElementById('hostWheelWinnerName').textContent = '🎉 ' + currentQuestion.wheelWinner;
+        setTimeout(async () => {
+          await roomRef.update({ status: 'question' });
+          renderHostLiveQuestion(currentQuestion, room.players || []);
+          document.getElementById('revealBtn').style.display = 'block';
+          document.getElementById('nextQBtn').style.display = 'none';
+          document.getElementById('hostRoundLeaderboard').innerHTML = '';
+          goTo('hostQuestionLive');
+          listenAsHostQuestion();
+        }, 1400);
+      }, 4200);
+
+    } else {
+      await roomRef.update({
+        status: 'question',
+        currentQuestionIndex: index,
+        currentQuestion: currentQuestion
+      });
+      renderHostLiveQuestion(currentQuestion, room.players || []);
+      document.getElementById('revealBtn').style.display = 'block';
+      document.getElementById('nextQBtn').style.display = 'none';
+      document.getElementById('hostRoundLeaderboard').innerHTML = '';
+      goTo('hostQuestionLive');
+      listenAsHostQuestion();
+    }
+  }
+
+  // ===== מנהל: התחלת החידון מהרשימה =====
+  async function startQuizFromBank(){
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const bank = room.questionBank || [];
+      if(bank.length === 0) return;
+
+      const currentQuestion = buildLiveQuestionFromBank(bank[0]);
+      await launchQuestion(currentQuestion, room, 0);
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  // ===== מנהל: מעבר לשאלה הבאה ברשימה =====
+  async function nextQuestionFromBank(){
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const bank = room.questionBank || [];
+      const nextIndex = (room.currentQuestionIndex === undefined ? -1 : room.currentQuestionIndex) + 1;
+
+      if(nextIndex >= bank.length){
+        await roomRef.update({ status: 'finished' });
+        renderHostLeaderboard(room.players || []);
+        goTo('hostQuizEnd');
+        if(unsubscribeHostQuestion) unsubscribeHostQuestion();
+        return;
+      }
+
+      const currentQuestion = buildLiveQuestionFromBank(bank[nextIndex]);
+      await launchQuestion(currentQuestion, room, nextIndex);
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  function leaderboardRowsHTML(players, highlightName){
+    const sorted = [...players].sort((a, b) => (b.score || 0) - (a.score || 0));
+    const medals = ['🥇', '🥈', '🥉'];
+    return sorted.map((p, idx) => {
+      const medal = medals[idx] || (idx + 1) + '.';
+      const meClass = p.name === highlightName ? ' me' : '';
+      return '<div class="leaderboard-row' + meClass + '"><span><span class="leaderboard-rank">' + medal + '</span>' + p.name + '</span><span>' + (p.score || 0) + ' נק׳</span></div>';
+    }).join('');
+  }
+
+  function renderHostLeaderboard(players){
+    const el = document.getElementById('finalLeaderboard');
+    el.innerHTML = leaderboardRowsHTML(players, null);
   }
 
   function listenAsHostQuestion(){
@@ -722,9 +1149,12 @@
   }
 
   function renderHostLiveQuestion(q, players){
+    renderMediaInto(document.getElementById('liveMediaContainer'), q.mediaUrl);
     document.getElementById('liveQuestionText').textContent = q.text;
     document.getElementById('livePointsPill').textContent = q.points + ' נקודות';
-    document.getElementById('answeredProgress').textContent = 'ענו ' + q.answers.length + ' מתוך ' + players.length + ' שחקנים';
+    document.getElementById('answeredProgress').textContent = q.type === 'mc'
+      ? 'ענו ' + q.answers.length + ' מתוך ' + players.length + ' שחקנים'
+      : (q.wheelWinner ? 'הגלגל בחר: ' + q.wheelWinner : '');
 
     const mcArea = document.getElementById('mcHostArea');
     const openArea = document.getElementById('openHostArea');
@@ -741,12 +1171,17 @@
     } else {
       mcArea.innerHTML = '';
       openArea.innerHTML = '';
-      players.forEach(p => {
+      const orderedPlayers = [...players].sort((a, b) => {
+        if(a.name === q.wheelWinner) return -1;
+        if(b.name === q.wheelWinner) return 1;
+        return 0;
+      });
+      orderedPlayers.forEach(p => {
         const row = document.createElement('div');
         row.className = 'player-award-row';
         const nameSpan = document.createElement('span');
         nameSpan.className = 'pname';
-        nameSpan.textContent = p.name;
+        nameSpan.textContent = p.name === q.wheelWinner ? '🎯 ' + p.name : p.name;
         row.appendChild(nameSpan);
         if(!q.revealed){
           const btn = document.createElement('button');
@@ -760,7 +1195,7 @@
     }
   }
 
-  // מנהל מסמן ידנית מי צדק בשאלה פתוחה (עד שנבנה את גלגל המזל)
+  // מנהל מסמן ידנית מי צדק בשאלה פתוחה
   async function awardOpenPoint(playerName, points){
     try{
       const roomRef = db.collection('rooms').doc(currentRoomCode);
@@ -773,6 +1208,8 @@
       await roomRef.update({ players: players, currentQuestion: cq, status: 'results' });
       document.getElementById('revealBtn').style.display = 'none';
       document.getElementById('nextQBtn').style.display = 'block';
+      document.getElementById('hostRoundLeaderboard').innerHTML =
+        '<div class="section-title">לוח מקומות עדכני</div>' + leaderboardRowsHTML(players, null);
     }catch(e){
       console.error(e);
     }
@@ -785,9 +1222,10 @@
       const docSnap = await roomRef.get();
       const room = docSnap.data();
       const cq = room.currentQuestion;
+      let updatedPlayers = room.players;
 
       if(cq.type === 'mc'){
-        const players = room.players.map(p => {
+        updatedPlayers = room.players.map(p => {
           const ans = cq.answers.find(a => a.name === p.name);
           if(ans && ans.optionIndex === cq.correctIndex){
             return { ...p, score: (p.score || 0) + cq.points };
@@ -795,11 +1233,13 @@
           return p;
         });
         cq.revealed = true;
-        await roomRef.update({ players: players, currentQuestion: cq, status: 'results' });
+        await roomRef.update({ players: updatedPlayers, currentQuestion: cq, status: 'results' });
       }
 
       document.getElementById('revealBtn').style.display = 'none';
       document.getElementById('nextQBtn').style.display = 'block';
+      document.getElementById('hostRoundLeaderboard').innerHTML =
+        '<div class="section-title">לוח מקומות עדכני</div>' + leaderboardRowsHTML(updatedPlayers, null);
     }catch(e){
       console.error(e);
     }
@@ -812,7 +1252,20 @@
       if(!docSnap.exists) return;
       const room = docSnap.data();
 
-      if(room.status === 'question' && room.currentQuestion){
+      if(room.status === 'wheel' && room.currentQuestion){
+        if(lastSeenWheelId !== room.currentQuestion.id){
+          lastSeenWheelId = room.currentQuestion.id;
+          const players = (room.currentQuestion.wheelPlayersSnapshot || []).map(n => ({ name: n }));
+          const discEl = document.getElementById('playerWheelDisc');
+          renderWheelDisc(discEl, players);
+          document.getElementById('playerWheelWinnerName').textContent = '';
+          goTo('playerWheel');
+          spinWheelDisc(discEl, room.currentQuestion.wheelRotation);
+          setTimeout(() => {
+            document.getElementById('playerWheelWinnerName').textContent = '🎉 ' + room.currentQuestion.wheelWinner;
+          }, 4200);
+        }
+      } else if(room.status === 'question' && room.currentQuestion){
         if(lastSeenQuestionId !== room.currentQuestion.id){
           lastSeenQuestionId = room.currentQuestion.id;
           hasAnsweredCurrent = false;
@@ -824,13 +1277,26 @@
       } else if(room.status === 'results' && room.currentQuestion){
         renderPlayerResult(room.currentQuestion, room.players || []);
         goTo('playerResult');
+      } else if(room.status === 'finished'){
+        renderPlayerFinished(room.players || []);
+        goTo('playerFinished');
       } else if(room.status === 'lobby'){
         goTo('playerWaiting');
       }
     });
   }
 
+  function renderPlayerFinished(players){
+    const me = players.find(p => p.name === currentPlayerName);
+    const sorted = [...players].sort((a, b) => (b.score || 0) - (a.score || 0));
+    const myRank = sorted.findIndex(p => p.name === currentPlayerName) + 1;
+    document.getElementById('pfScore').textContent = 'הניקוד הסופי שלך: ' + (me ? (me.score || 0) : 0);
+    document.getElementById('pfRank').textContent = 'מקום ' + myRank + ' מתוך ' + players.length;
+    document.getElementById('pfLeaderboard').innerHTML = leaderboardRowsHTML(players, currentPlayerName);
+  }
+
   function renderPlayerQuestion(q){
+    renderMediaInto(document.getElementById('pqMediaContainer'), q.mediaUrl);
     document.getElementById('pqText').textContent = q.text;
     document.getElementById('pqPoints').textContent = q.points + ' נקודות';
     const mcArea = document.getElementById('pqMcArea');
@@ -848,7 +1314,11 @@
         mcArea.appendChild(btn);
       });
     } else {
-      openArea.textContent = 'השאלה מוצגת אצל המנהל/ת - ענו בקול רם!';
+      if(q.wheelWinner === currentPlayerName){
+        openArea.innerHTML = '🎯 <strong>הגלגל בחר בכם!</strong><br>ענו בקול רם עכשיו';
+      } else {
+        openArea.textContent = 'הגלגל בחר ב-' + q.wheelWinner + ' - בהצלחה!';
+      }
     }
   }
 
@@ -876,19 +1346,23 @@
     const me = players.find(p => p.name === currentPlayerName);
     const banner = document.getElementById('resultBanner');
     const scoreLine = document.getElementById('resultScoreLine');
+    const emoji = document.getElementById('resultEmoji');
+    let wasCorrect = false;
 
     if(q.type === 'mc'){
       const myAnswer = q.answers.find(a => a.name === currentPlayerName);
-      const wasCorrect = myAnswer && myAnswer.optionIndex === q.correctIndex;
+      wasCorrect = myAnswer && myAnswer.optionIndex === q.correctIndex;
       banner.textContent = wasCorrect ? 'כל הכבוד, תשובה נכונה!' : 'לא נורא, פעם הבאה!';
-      banner.className = 'result-banner ' + (wasCorrect ? 'correct' : 'wrong');
     } else {
-      const wasCorrect = q.correctPlayerName === currentPlayerName;
+      wasCorrect = q.correctPlayerName === currentPlayerName;
       banner.textContent = wasCorrect ? 'כל הכבוד, ענית נכון!' : 'הפעם ענה מישהו אחר';
-      banner.className = 'result-banner ' + (wasCorrect ? 'correct' : 'wrong');
     }
+    banner.className = 'result-banner ' + (wasCorrect ? 'correct' : 'wrong');
+    emoji.textContent = wasCorrect ? '🎉' : '🤔';
 
     scoreLine.textContent = 'הניקוד שלך: ' + (me ? (me.score || 0) : 0);
+    document.getElementById('playerRoundLeaderboard').innerHTML =
+      '<div class="section-title">לוח מקומות</div>' + leaderboardRowsHTML(players, currentPlayerName);
   }
 </script>
 </body>
