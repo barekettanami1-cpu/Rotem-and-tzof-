@@ -599,6 +599,47 @@
   @keyframes confetti-fall{
     to{ transform: translateY(110vh) rotate(540deg); opacity:0.3; }
   }
+
+  /* ---- Bank list row actions ---- */
+  .bank-row{
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+  }
+  .bank-row-text{
+    color: var(--ink);
+    font-weight:600;
+    font-size:0.92rem;
+    margin-bottom: 8px;
+    line-height:1.4;
+  }
+  .bank-row-actions{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .icon-btn{
+    border:none;
+    background:#fff;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size:0.85rem;
+    cursor:pointer;
+    color: var(--ink);
+  }
+  .icon-btn.danger{ color: var(--red); }
+  .wheel-toggle-btn{
+    border:none;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size:0.8rem;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .wheel-toggle-btn.on{ background: var(--gold); color: var(--ink); }
+  .wheel-toggle-btn.off{ background: #fff; color: var(--ink-soft); }
 </style>
 </head>
 <body>
@@ -652,7 +693,7 @@
       </div>
       <div id="bankList" style="margin-bottom:16px;"></div>
       <div class="empty-hint" id="bankEmptyHint">עדיין לא הוספתם שאלות</div>
-      <button class="btn btn-secondary" onclick="goTo('hostCreateQuestion')">הוסיפו שאלה</button>
+      <button class="btn btn-secondary" onclick="resetQuestionForm(); goTo('hostCreateQuestion')">הוסיפו שאלה</button>
       <button class="btn btn-secondary" onclick="exportQuestionBank()">ייצוא השאלות לקובץ</button>
       <label class="btn btn-secondary" style="display:block; text-align:center; cursor:pointer;">
         ייבוא שאלות מקובץ
@@ -717,9 +758,9 @@
         </div>
       </div>
       <div class="error" id="questionError"></div>
-      <button class="btn btn-primary" onclick="addQuestionToBank()">הוסיפו לרשימת השאלות</button>
+      <button class="btn btn-primary" id="saveQuestionBtn" onclick="addQuestionToBank()">הוסיפו לרשימת השאלות</button>
     </div>
-    <div style="text-align:center;"><span class="back-link" onclick="goTo('hostQuestionBank')">חזרה לרשימה</span></div>
+    <div style="text-align:center;"><span class="back-link" onclick="resetQuestionForm(); goTo('hostQuestionBank')">חזרה לרשימה</span></div>
   </div>
 
   <!-- מסך מנהל: גלגל המזל -->
@@ -1011,6 +1052,7 @@
 
   let selectedQuestionType = 'mc';
   let selectedCorrectIndex = null;
+  let editingQuestionIndex = null;
   let hasAnsweredCurrent = false;
   let lastSeenQuestionId = null;
   let lastSeenWheelId = null;
@@ -1037,7 +1079,100 @@
     });
   }
 
-  // ===== מנהל: הוספת שאלה לרשימה (בנק שאלות) =====
+  function resetQuestionForm(){
+    document.getElementById('questionTextInput').value = '';
+    document.getElementById('mediaUrlInput').value = '';
+    document.getElementById('revealTextInput').value = '';
+    document.getElementById('wheelEnabledInput').checked = true;
+    document.getElementById('targetSelect').value = 'all';
+    document.querySelectorAll('#optionsContainer input[type=text]').forEach(i => i.value = '');
+    selectedCorrectIndex = null;
+    document.querySelectorAll('.correct-check').forEach(b => b.classList.remove('selected'));
+    setQuestionType('mc');
+    editingQuestionIndex = null;
+    document.getElementById('saveQuestionBtn').textContent = 'הוסיפו לרשימת השאלות';
+  }
+
+  // ===== מנהל: פתיחת שאלה קיימת לעריכה =====
+  async function editQuestionInBank(idx){
+    try{
+      const docSnap = await db.collection('rooms').doc(currentRoomCode).get();
+      const room = docSnap.data();
+      const q = (room.questionBank || [])[idx];
+      if(!q) return;
+
+      editingQuestionIndex = idx;
+      setQuestionType(q.type);
+      document.getElementById('questionTextInput').value = q.text || '';
+      document.getElementById('mediaUrlInput').value = q.mediaUrl || '';
+      document.getElementById('revealTextInput').value = q.revealText || '';
+      document.getElementById('wheelEnabledInput').checked = !!q.wheelEnabled;
+      document.getElementById('targetSelect').value = q.target || 'all';
+      document.getElementById('pointsInput').value = q.points || 100;
+
+      if(q.type === 'mc'){
+        const inputs = document.querySelectorAll('#optionsContainer input[type=text]');
+        (q.options || []).forEach((opt, i) => { if(inputs[i]) inputs[i].value = opt; });
+        if(q.correctIndex !== null && q.correctIndex !== undefined) selectCorrect(q.correctIndex);
+      }
+
+      document.getElementById('saveQuestionBtn').textContent = 'שמרו שינויים';
+      goTo('hostCreateQuestion');
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  // ===== מנהל: מחיקת שאלה =====
+  async function deleteQuestionFromBank(idx){
+    if(!confirm('למחוק את השאלה הזו?')) return;
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const bank = room.questionBank || [];
+      bank.splice(idx, 1);
+      await roomRef.update({ questionBank: bank });
+      refreshBankView();
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  // ===== מנהל: הזזת שאלה למעלה/למטה ברשימה =====
+  async function moveQuestionInBank(idx, direction){
+    const newIdx = idx + direction;
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const bank = room.questionBank || [];
+      if(newIdx < 0 || newIdx >= bank.length) return;
+      [bank[idx], bank[newIdx]] = [bank[newIdx], bank[idx]];
+      await roomRef.update({ questionBank: bank });
+      refreshBankView();
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  // ===== מנהל: הפעלה/כיבוי מהיר של גלגל המזל לשאלה =====
+  async function toggleWheelQuick(idx){
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const bank = room.questionBank || [];
+      if(!bank[idx]) return;
+      bank[idx].wheelEnabled = !bank[idx].wheelEnabled;
+      await roomRef.update({ questionBank: bank });
+      refreshBankView();
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  // ===== מנהל: הוספת/עריכת שאלה בבנק =====
   async function addQuestionToBank(){
     const text = document.getElementById('questionTextInput').value.trim();
     const points = parseInt(document.getElementById('pointsInput').value) || 100;
@@ -1076,20 +1211,14 @@
       const docSnap = await roomRef.get();
       const room = docSnap.data();
       const bank = room.questionBank || [];
-      bank.push(bankQuestion);
+      if(editingQuestionIndex !== null){
+        bank[editingQuestionIndex] = bankQuestion;
+      } else {
+        bank.push(bankQuestion);
+      }
       await roomRef.update({ questionBank: bank });
 
-      // איפוס טופס
-      document.getElementById('questionTextInput').value = '';
-      document.getElementById('mediaUrlInput').value = '';
-      document.getElementById('revealTextInput').value = '';
-      document.getElementById('wheelEnabledInput').checked = true;
-      document.getElementById('targetSelect').value = 'all';
-      document.querySelectorAll('#optionsContainer input[type=text]').forEach(i => i.value = '');
-      selectedCorrectIndex = null;
-      document.querySelectorAll('.correct-check').forEach(b => b.classList.remove('selected'));
-      setQuestionType('mc');
-
+      resetQuestionForm();
       goTo('hostQuestionBank');
       refreshBankView();
     }catch(e){
@@ -1175,15 +1304,54 @@
 
       bank.forEach((q, idx) => {
         const row = document.createElement('div');
-        row.className = 'player-award-row';
-        const label = document.createElement('span');
-        label.className = 'pname';
+        row.className = 'bank-row';
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'bank-row-text';
         const icon = typeIcons[q.type] || '📝';
         const mediaIcon = q.mediaUrl ? ' 🖼️' : '';
-        const wheelIcon = q.wheelEnabled ? ' 🎡' : '';
         const birthdayIcon = q.target === 'birthday' ? ' 🎂' : '';
-        label.textContent = (idx + 1) + '. ' + icon + ' ' + q.text + mediaIcon + wheelIcon + birthdayIcon;
-        row.appendChild(label);
+        textDiv.textContent = (idx + 1) + '. ' + icon + ' ' + q.text + mediaIcon + birthdayIcon;
+        row.appendChild(textDiv);
+
+        const actions = document.createElement('div');
+        actions.className = 'bank-row-actions';
+
+        if(q.type === 'open' || q.type === 'reveal'){
+          const wheelBtn = document.createElement('button');
+          wheelBtn.className = 'wheel-toggle-btn ' + (q.wheelEnabled ? 'on' : 'off');
+          wheelBtn.textContent = '🎡 גלגל ' + (q.wheelEnabled ? 'פעיל' : 'כבוי');
+          wheelBtn.onclick = () => toggleWheelQuick(idx);
+          actions.appendChild(wheelBtn);
+        }
+
+        const upBtn = document.createElement('button');
+        upBtn.className = 'icon-btn';
+        upBtn.textContent = '⬆️';
+        upBtn.disabled = idx === 0;
+        upBtn.onclick = () => moveQuestionInBank(idx, -1);
+        actions.appendChild(upBtn);
+
+        const downBtn = document.createElement('button');
+        downBtn.className = 'icon-btn';
+        downBtn.textContent = '⬇️';
+        downBtn.disabled = idx === bank.length - 1;
+        downBtn.onclick = () => moveQuestionInBank(idx, 1);
+        actions.appendChild(downBtn);
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'icon-btn';
+        editBtn.textContent = '✏️ עריכה';
+        editBtn.onclick = () => editQuestionInBank(idx);
+        actions.appendChild(editBtn);
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'icon-btn danger';
+        delBtn.textContent = '🗑️';
+        delBtn.onclick = () => deleteQuestionFromBank(idx);
+        actions.appendChild(delBtn);
+
+        row.appendChild(actions);
         listEl.appendChild(row);
       });
     }catch(e){
