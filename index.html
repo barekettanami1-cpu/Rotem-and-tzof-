@@ -694,6 +694,7 @@
       <div id="bankList" style="margin-bottom:16px;"></div>
       <div class="empty-hint" id="bankEmptyHint">עדיין לא הוספתם שאלות</div>
       <button class="btn btn-secondary" onclick="resetQuestionForm(); goTo('hostCreateQuestion')">הוסיפו שאלה</button>
+      <button class="btn btn-secondary" onclick="goTo('hostBulkImport')">➕ הוספה מהירה מרשימה</button>
       <button class="btn btn-secondary" onclick="exportQuestionBank()">ייצוא השאלות לקובץ</button>
       <label class="btn btn-secondary" style="display:block; text-align:center; cursor:pointer;">
         ייבוא שאלות מקובץ
@@ -702,6 +703,33 @@
       <button class="btn btn-primary" id="startQuizBtn" onclick="startQuizFromBank()" style="margin-top:12px; display:none;">התחילו את החידון</button>
     </div>
     <div style="text-align:center;"><span class="back-link" onclick="goTo('hostLobby')">חזרה לחדר</span></div>
+  </div>
+
+  <!-- מסך מנהל: הוספה מהירה מרשימת טקסט -->
+  <div id="hostBulkImport" class="screen">
+    <div class="card">
+      <div class="eyebrow">מנהל/ת</div>
+      <h2>הוספה מהירה</h2>
+      <p style="font-size:0.85rem; color:var(--ink-soft); line-height:1.6; margin-bottom:12px;">
+        הדביקו רשימת שאלות. כל שאלה בבלוק נפרד (שורה ריקה מפרידה).<br><br>
+        <strong>שאלה עם אפשרויות:</strong> שורה ראשונה = השאלה, אחריה עד 4 שורות אפשרויות, ושורה "תשובה: א" (או המילה המדויקת) לסימון הנכונה.<br><br>
+        <strong>שאלה פתוחה:</strong> פשוט שורה אחת - רק טקסט השאלה, בלי אפשרויות.<br><br>
+        אפשר גם "ניקוד: 200" בתוך הבלוק כדי לקבוע ניקוד שונה (ברירת מחדל 100).
+      </p>
+      <textarea class="qtext" id="bulkTextInput" style="min-height:220px;" placeholder="מה הצבע האהוב על רותם?
+א. כחול
+ב. ורוד
+ג. ירוק
+ד. סגול
+תשובה: ב
+
+איפה צוף ורותם נפגשו לראשונה?"></textarea>
+      <div class="error" id="bulkError"></div>
+      <div id="bulkPreview" style="margin-bottom:14px;"></div>
+      <button class="btn btn-primary" onclick="parseAndPreviewBulk()">בדקו תצוגה מקדימה</button>
+      <button class="btn btn-primary" id="bulkAddBtn" onclick="confirmBulkAdd()" style="display:none; margin-top:10px;">הוסיפו את כל השאלות</button>
+    </div>
+    <div style="text-align:center;"><span class="back-link" onclick="goTo('hostQuestionBank')">חזרה לרשימה</span></div>
   </div>
 
   <!-- מסך מנהל: יצירת שאלה -->
@@ -1269,6 +1297,122 @@
       console.error(e);
     }
     event.target.value = '';
+  }
+
+  // ===== מנהל: פירסור רשימת שאלות מטקסט חופשי =====
+  let bulkParsedQuestions = [];
+
+  function parseBulkQuestions(text){
+    const blocks = text.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+    const results = [];
+    const warnings = [];
+    const letterMap = { 'א': 0, 'ב': 1, 'ג': 2, 'ד': 3, 'a': 0, 'b': 1, 'c': 2, 'd': 3 };
+
+    blocks.forEach((block, bi) => {
+      const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+      if(lines.length === 0) return;
+      const questionText = lines[0];
+      const optionLines = [];
+      let answerLine = null;
+      let pointsLine = null;
+
+      for(let i = 1; i < lines.length; i++){
+        const l = lines[i];
+        if(/^(תשובה|נכונה)\s*[:\-]/.test(l)){ answerLine = l; continue; }
+        if(/^ניקוד\s*[:\-]/.test(l)){ pointsLine = l; continue; }
+        optionLines.push(l);
+      }
+
+      const cleanOptions = optionLines.map(l => l.replace(/^[\u05d0-\u05ea0-9][\.\)]\s*/, '').replace(/^[-*]\s*/, '').trim()).filter(Boolean);
+
+      let points = 100;
+      if(pointsLine){
+        const m = pointsLine.match(/(\d+)/);
+        if(m) points = parseInt(m[1]);
+      }
+
+      if(cleanOptions.length >= 2){
+        let correctIndex = 0;
+        if(answerLine){
+          const val = answerLine.split(/[:\-]/).slice(1).join(':').trim();
+          if(letterMap[val[0]] !== undefined && val.length <= 2){
+            correctIndex = letterMap[val[0]];
+          } else if(/^\d+$/.test(val)){
+            correctIndex = parseInt(val) - 1;
+          } else {
+            const idx = cleanOptions.findIndex(o => o === val || o.includes(val));
+            if(idx >= 0) correctIndex = idx;
+            else warnings.push('שאלה ' + (bi + 1) + ' ("' + questionText.slice(0, 20) + '..."): לא זוהתה תשובה נכונה, נבחרה האפשרות הראשונה כברירת מחדל');
+          }
+        } else {
+          warnings.push('שאלה ' + (bi + 1) + ' ("' + questionText.slice(0, 20) + '..."): לא צוינה תשובה נכונה, נבחרה האפשרות הראשונה כברירת מחדל');
+        }
+        while(cleanOptions.length < 4) cleanOptions.push('');
+        results.push({
+          type: 'mc', text: questionText, points: points, mediaUrl: '', revealText: '',
+          wheelEnabled: false, target: 'all', options: cleanOptions.slice(0, 4), correctIndex: correctIndex
+        });
+      } else {
+        results.push({
+          type: 'open', text: questionText, points: points, mediaUrl: '', revealText: '',
+          wheelEnabled: true, target: 'all', options: [], correctIndex: null
+        });
+      }
+    });
+
+    return { results, warnings };
+  }
+
+  function parseAndPreviewBulk(){
+    const text = document.getElementById('bulkTextInput').value;
+    const errEl = document.getElementById('bulkError');
+    const previewEl = document.getElementById('bulkPreview');
+    const addBtn = document.getElementById('bulkAddBtn');
+    errEl.textContent = '';
+
+    if(!text.trim()){ errEl.textContent = 'נא להדביק שאלות'; return; }
+
+    const { results, warnings } = parseBulkQuestions(text);
+    bulkParsedQuestions = results;
+
+    if(results.length === 0){
+      errEl.textContent = 'לא זוהו שאלות בטקסט';
+      addBtn.style.display = 'none';
+      return;
+    }
+
+    let html = '<div class="section-title">זוהו ' + results.length + ' שאלות:</div>';
+    results.forEach((q, i) => {
+      const icon = q.type === 'mc' ? '📝' : '🎯';
+      html += '<div class="player-award-row"><span class="pname">' + (i + 1) + '. ' + icon + ' ' + q.text + '</span></div>';
+    });
+    if(warnings.length > 0){
+      html += '<div style="margin-top:10px; color:var(--red); font-size:0.85rem;">⚠️ ' + warnings.join('<br>⚠️ ') + '</div>';
+    }
+    previewEl.innerHTML = html;
+    addBtn.style.display = 'block';
+  }
+
+  async function confirmBulkAdd(){
+    if(bulkParsedQuestions.length === 0) return;
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const bank = room.questionBank || [];
+      const merged = bank.concat(bulkParsedQuestions);
+      await roomRef.update({ questionBank: merged });
+
+      document.getElementById('bulkTextInput').value = '';
+      document.getElementById('bulkPreview').innerHTML = '';
+      document.getElementById('bulkAddBtn').style.display = 'none';
+      bulkParsedQuestions = [];
+
+      goTo('hostQuestionBank');
+      refreshBankView();
+    }catch(e){
+      console.error(e);
+    }
   }
 
   async function exportQuestionBank(){
