@@ -652,6 +652,7 @@
     <button class="btn btn-primary" onclick="goTo('hostCreate')">פתחו חדר חדש (מנהל/ת)</button>
     <button class="btn btn-secondary" onclick="goTo('playerJoin')">הצטרפו לחדר (שחקן/ית)</button>
     <button class="btn btn-ghost" id="resumeRoomBtn" onclick="resumeLastRoom()" style="display:none;"></button>
+    <button class="btn btn-ghost" id="soundToggleBtn" onclick="toggleSound()">🔊 צלילים פועלים</button>
   </div>
 
   <!-- מסך מנהל: יצירת חדר -->
@@ -675,7 +676,6 @@
         <div class="room-code" id="roomCodeDisplay">----</div>
       </div>
       <h2 style="font-size:1.1rem; margin-bottom:8px;">שחקנים בחדר (<span id="playerCount">0</span>)</h2>
-      <p style="font-size:0.82rem; color:var(--ink-soft); margin-bottom:8px;">לחצו על שם כדי לסמן את החוגגת/החוגג 🎂</p>
       <ul class="player-list" id="playerList"></ul>
       <div class="empty-hint" id="emptyHint">עדיין אין שחקנים - שלחו להם את הקוד</div>
       <button class="btn btn-primary" onclick="goTo('hostQuestionBank'); refreshBankView();" style="margin-top:10px;">הכינו שאלות והתחילו</button>
@@ -711,19 +711,12 @@
       <div class="eyebrow">מנהל/ת</div>
       <h2>הוספה מהירה</h2>
       <p style="font-size:0.85rem; color:var(--ink-soft); line-height:1.6; margin-bottom:12px;">
-        הדביקו רשימת שאלות. כל שאלה בבלוק נפרד (שורה ריקה מפרידה).<br><br>
-        <strong>שאלה עם אפשרויות:</strong> שורה ראשונה = השאלה, אחריה עד 4 שורות אפשרויות, ושורה "תשובה: א" (או המילה המדויקת) לסימון הנכונה.<br><br>
-        <strong>שאלה פתוחה:</strong> פשוט שורה אחת - רק טקסט השאלה, בלי אפשרויות.<br><br>
-        אפשר גם "ניקוד: 200" בתוך הבלוק כדי לקבוע ניקוד שונה (ברירת מחדל 100).
+        פשוט הדביקו את כל השאלות שלכם, <strong>שורה אחת לכל שאלה</strong> - בלי אפשרויות ובלי תשובות, רק הטקסט. כל שאלה תיכנס לרשימה כשאלה בסיסית, ואחר כך תוכלו ללחוץ ✏️ עריכה על כל שאלה בנפרד כדי להפוך אותה לשאלה עם אפשרויות, ענן מילים, או חשיפת מידע - ולהוסיף תמונה אם רוצים.
       </p>
       <textarea class="qtext" id="bulkTextInput" style="min-height:220px;" placeholder="מה הצבע האהוב על רותם?
-א. כחול
-ב. ורוד
-ג. ירוק
-ד. סגול
-תשובה: ב
-
-איפה צוף ורותם נפגשו לראשונה?"></textarea>
+איפה צוף ורותם נפגשו לראשונה?
+מה השיר האהוב על החוגגת?
+כמה שנים הם ביחד?"></textarea>
       <div class="error" id="bulkError"></div>
       <div id="bulkPreview" style="margin-bottom:14px;"></div>
       <button class="btn btn-primary" onclick="parseAndPreviewBulk()">בדקו תצוגה מקדימה</button>
@@ -745,27 +738,13 @@
         <button type="button" class="type-btn" id="typeBtnCloud" onclick="setQuestionType('cloud')">ענן מילים</button>
         <button type="button" class="type-btn" id="typeBtnReveal" onclick="setQuestionType('reveal')">חשיפת מידע</button>
       </div>
+      <p id="typeHint" style="font-size:0.8rem; color:var(--ink-soft); margin:6px 0 12px;"></p>
       <textarea class="qtext" id="questionTextInput" placeholder="כתבו כאן את השאלה..."></textarea>
       <textarea class="qtext" id="revealTextInput" placeholder="הטקסט שייחשף בלחיצת כפתור..." style="display:none;"></textarea>
       <input type="text" class="media-input" id="mediaUrlInput" placeholder="קישור לתמונה/סרטון/יוטיוב/הקלטה קולית (רשות)">
       <div class="points-row" id="pointsRow">
         <label for="pointsInput">ניקוד לשאלה:</label>
         <input type="number" class="points-input" id="pointsInput" value="100" min="10" step="10">
-      </div>
-      <div id="wheelTargetRow" style="display:none; margin-bottom:14px;">
-        <div class="points-row">
-          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-            <input type="checkbox" id="wheelEnabledInput" checked style="width:18px; height:18px;">
-            הפעילו גלגל מזל לפני השאלה
-          </label>
-        </div>
-        <div class="points-row">
-          <label for="targetSelect">מיועדת ל:</label>
-          <select id="targetSelect" style="padding:8px 10px; border-radius:10px; border:2px solid #E3D9C5;">
-            <option value="all">כל המשתתפים</option>
-            <option value="birthday">החוגגת/החוגג בלבד</option>
-          </select>
-        </div>
       </div>
       <div id="optionsContainer">
         <div class="option-row">
@@ -865,6 +844,7 @@
       <div id="pqCloudArea" style="display:none;">
         <input type="text" class="cloud-input" id="cloudWordInput" placeholder="כתבו מילה או משפט קצר..." maxlength="30">
         <button class="btn btn-primary" id="cloudSubmitBtn" onclick="submitCloudWord()">שלחו</button>
+        <div id="pqCloudLive" class="cloud-box" style="margin-top:14px;"></div>
       </div>
       <div id="pqRevealArea" style="display:none; text-align:center; color:var(--ink-soft); padding:20px 0;">צפו במסך הראשי 👀</div>
     </div>
@@ -930,6 +910,68 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
+  // ===== צלילים =====
+  let soundEnabled = localStorage.getItem('soundEnabled') !== 'off';
+  let audioCtx = null;
+
+  function updateSoundBtn(){
+    const btn = document.getElementById('soundToggleBtn');
+    if(btn) btn.textContent = soundEnabled ? '🔊 צלילים פועלים' : '🔇 צלילים כבויים';
+  }
+
+  function toggleSound(){
+    soundEnabled = !soundEnabled;
+    localStorage.setItem('soundEnabled', soundEnabled ? 'on' : 'off');
+    updateSoundBtn();
+  }
+
+  function getAudioCtx(){
+    if(!audioCtx){
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if(Ctx) audioCtx = new Ctx();
+    }
+    return audioCtx;
+  }
+
+  function playTone(freq, duration, delay, type){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.value = freq;
+    const startAt = ctx.currentTime + (delay || 0);
+    gain.gain.setValueAtTime(0.0001, startAt);
+    gain.gain.exponentialRampToValueAtTime(0.18, startAt + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(startAt);
+    osc.stop(startAt + duration + 0.05);
+  }
+
+  function playSound(name){
+    if(!soundEnabled) return;
+    try{
+      if(name === 'correct'){
+        playTone(523.25, 0.15, 0, 'sine');
+        playTone(659.25, 0.15, 0.12, 'sine');
+        playTone(783.99, 0.25, 0.24, 'sine');
+      } else if(name === 'wrong'){
+        playTone(196, 0.3, 0, 'sawtooth');
+      } else if(name === 'pop'){
+        playTone(440, 0.1, 0, 'sine');
+      } else if(name === 'spin'){
+        for(let i = 0; i < 10; i++) playTone(300 + i * 15, 0.06, i * 0.18, 'square');
+      } else if(name === 'tada'){
+        playTone(523.25, 0.15, 0, 'triangle');
+        playTone(659.25, 0.15, 0.15, 'triangle');
+        playTone(783.99, 0.15, 0.3, 'triangle');
+        playTone(1046.5, 0.35, 0.45, 'triangle');
+      }
+    }catch(e){ /* מתעלמים משגיאות אודיו */ }
+  }
+
   // ===== ניווט בין מסכים =====
   function goTo(screenId){
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -989,6 +1031,7 @@
     }catch(e){ /* localStorage לא זמין - מתעלמים */ }
   }
   checkForLastRoom();
+  updateSoundBtn();
 
   async function resumeLastRoom(){
     try{
@@ -1008,6 +1051,14 @@
     }
   }
 
+  const ANIMAL_AVATARS = ['🦉','🐶','🐱','🐬','🐦','🐟','🦊','🐼','🐨','🦁','🐸','🐢','🦋','🐧','🦄','🐰','🐙','🦔'];
+
+  function pickAvatarForName(name){
+    let hash = 0;
+    for(let i = 0; i < name.length; i++){ hash = (hash * 31 + name.charCodeAt(i)) >>> 0; }
+    return ANIMAL_AVATARS[hash % ANIMAL_AVATARS.length];
+  }
+
   function listenToLobby(){
     if(unsubscribeLobby) unsubscribeLobby();
     unsubscribeLobby = db.collection('rooms').doc(currentRoomCode).onSnapshot((docSnap) => {
@@ -1021,24 +1072,11 @@
       emptyHint.style.display = room.players.length === 0 ? 'block' : 'none';
       room.players.forEach(p => {
         const li = document.createElement('li');
-        li.className = 'player-chip' + (room.birthdayName === p.name ? ' birthday' : '');
-        li.textContent = (room.birthdayName === p.name ? '🎂 ' : '') + p.name;
-        li.onclick = () => toggleBirthday(p.name);
+        li.className = 'player-chip';
+        li.textContent = (p.avatar || pickAvatarForName(p.name)) + ' ' + p.name;
         listEl.appendChild(li);
       });
     });
-  }
-
-  async function toggleBirthday(name){
-    try{
-      const roomRef = db.collection('rooms').doc(currentRoomCode);
-      const docSnap = await roomRef.get();
-      const room = docSnap.data();
-      const newBirthday = room.birthdayName === name ? null : name;
-      await roomRef.update({ birthdayName: newBirthday });
-    }catch(e){
-      console.error(e);
-    }
   }
 
   // ===== שחקן: הצטרפות =====
@@ -1062,12 +1100,17 @@
         return;
       }
 
-      room.players.push({ name: name, score: 0, joinedAt: Date.now() });
+      const usedAvatars = room.players.map(p => p.avatar).filter(Boolean);
+      const availableAvatars = ANIMAL_AVATARS.filter(a => !usedAvatars.includes(a));
+      const pool = availableAvatars.length > 0 ? availableAvatars : ANIMAL_AVATARS;
+      const avatar = pool[Math.floor(Math.random() * pool.length)];
+
+      room.players.push({ name: name, score: 0, avatar: avatar, joinedAt: Date.now() });
       await roomRef.set(room);
 
       currentRoomCode = code;
       currentPlayerName = name;
-      document.getElementById('welcomePlayerName').textContent = 'היי ' + name + '!';
+      document.getElementById('welcomePlayerName').textContent = avatar + ' היי ' + name + '!';
       goTo('playerWaiting');
       listenAsPlayer();
     }catch(e){
@@ -1096,8 +1139,15 @@
 
     document.getElementById('optionsContainer').style.display = type === 'mc' ? 'block' : 'none';
     document.getElementById('revealTextInput').style.display = type === 'reveal' ? 'block' : 'none';
-    document.getElementById('wheelTargetRow').style.display = (type === 'open' || type === 'reveal') ? 'block' : 'none';
     document.getElementById('pointsRow').style.display = (type === 'mc' || type === 'open') ? 'flex' : 'none';
+
+    const hints = {
+      mc: 'שחקנים בוחרים תשובה מהטלפון שלהם.',
+      open: '🎡 גלגל המזל תמיד יבחר מי עונה מבין המשתתפים שהצטרפו.',
+      cloud: 'כל השחקנים כותבים תשובה קצרה, והמילים הנפוצות מוצגות גדולות יותר.',
+      reveal: 'מציגים מידע/עובדה, ולוחצים כפתור כדי לחשוף אותו באנימציה.'
+    };
+    document.getElementById('typeHint').textContent = hints[type] || '';
   }
 
   function selectCorrect(index){
@@ -1111,8 +1161,6 @@
     document.getElementById('questionTextInput').value = '';
     document.getElementById('mediaUrlInput').value = '';
     document.getElementById('revealTextInput').value = '';
-    document.getElementById('wheelEnabledInput').checked = true;
-    document.getElementById('targetSelect').value = 'all';
     document.querySelectorAll('#optionsContainer input[type=text]').forEach(i => i.value = '');
     selectedCorrectIndex = null;
     document.querySelectorAll('.correct-check').forEach(b => b.classList.remove('selected'));
@@ -1134,8 +1182,6 @@
       document.getElementById('questionTextInput').value = q.text || '';
       document.getElementById('mediaUrlInput').value = q.mediaUrl || '';
       document.getElementById('revealTextInput').value = q.revealText || '';
-      document.getElementById('wheelEnabledInput').checked = !!q.wheelEnabled;
-      document.getElementById('targetSelect').value = q.target || 'all';
       document.getElementById('pointsInput').value = q.points || 100;
 
       if(q.type === 'mc'){
@@ -1184,30 +1230,12 @@
     }
   }
 
-  // ===== מנהל: הפעלה/כיבוי מהיר של גלגל המזל לשאלה =====
-  async function toggleWheelQuick(idx){
-    try{
-      const roomRef = db.collection('rooms').doc(currentRoomCode);
-      const docSnap = await roomRef.get();
-      const room = docSnap.data();
-      const bank = room.questionBank || [];
-      if(!bank[idx]) return;
-      bank[idx].wheelEnabled = !bank[idx].wheelEnabled;
-      await roomRef.update({ questionBank: bank });
-      refreshBankView();
-    }catch(e){
-      console.error(e);
-    }
-  }
-
   // ===== מנהל: הוספת/עריכת שאלה בבנק =====
   async function addQuestionToBank(){
     const text = document.getElementById('questionTextInput').value.trim();
     const points = parseInt(document.getElementById('pointsInput').value) || 100;
     const mediaUrl = document.getElementById('mediaUrlInput').value.trim();
     const revealText = document.getElementById('revealTextInput').value.trim();
-    const wheelEnabled = document.getElementById('wheelEnabledInput').checked;
-    const target = document.getElementById('targetSelect').value;
     const errEl = document.getElementById('questionError');
     errEl.textContent = '';
 
@@ -1228,8 +1256,6 @@
       points: points,
       mediaUrl: mediaUrl,
       revealText: revealText,
-      wheelEnabled: (selectedQuestionType === 'open' || selectedQuestionType === 'reveal') ? wheelEnabled : false,
-      target: (selectedQuestionType === 'open' || selectedQuestionType === 'reveal') ? target : 'all',
       options: options,
       correctIndex: selectedQuestionType === 'mc' ? selectedCorrectIndex : null
     };
@@ -1303,64 +1329,17 @@
   let bulkParsedQuestions = [];
 
   function parseBulkQuestions(text){
-    const blocks = text.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
-    const results = [];
-    const warnings = [];
-    const letterMap = { 'א': 0, 'ב': 1, 'ג': 2, 'ד': 3, 'a': 0, 'b': 1, 'c': 2, 'd': 3 };
-
-    blocks.forEach((block, bi) => {
-      const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
-      if(lines.length === 0) return;
-      const questionText = lines[0];
-      const optionLines = [];
-      let answerLine = null;
-      let pointsLine = null;
-
-      for(let i = 1; i < lines.length; i++){
-        const l = lines[i];
-        if(/^(תשובה|נכונה)\s*[:\-]/.test(l)){ answerLine = l; continue; }
-        if(/^ניקוד\s*[:\-]/.test(l)){ pointsLine = l; continue; }
-        optionLines.push(l);
-      }
-
-      const cleanOptions = optionLines.map(l => l.replace(/^[\u05d0-\u05ea0-9][\.\)]\s*/, '').replace(/^[-*]\s*/, '').trim()).filter(Boolean);
-
-      let points = 100;
-      if(pointsLine){
-        const m = pointsLine.match(/(\d+)/);
-        if(m) points = parseInt(m[1]);
-      }
-
-      if(cleanOptions.length >= 2){
-        let correctIndex = 0;
-        if(answerLine){
-          const val = answerLine.split(/[:\-]/).slice(1).join(':').trim();
-          if(letterMap[val[0]] !== undefined && val.length <= 2){
-            correctIndex = letterMap[val[0]];
-          } else if(/^\d+$/.test(val)){
-            correctIndex = parseInt(val) - 1;
-          } else {
-            const idx = cleanOptions.findIndex(o => o === val || o.includes(val));
-            if(idx >= 0) correctIndex = idx;
-            else warnings.push('שאלה ' + (bi + 1) + ' ("' + questionText.slice(0, 20) + '..."): לא זוהתה תשובה נכונה, נבחרה האפשרות הראשונה כברירת מחדל');
-          }
-        } else {
-          warnings.push('שאלה ' + (bi + 1) + ' ("' + questionText.slice(0, 20) + '..."): לא צוינה תשובה נכונה, נבחרה האפשרות הראשונה כברירת מחדל');
-        }
-        while(cleanOptions.length < 4) cleanOptions.push('');
-        results.push({
-          type: 'mc', text: questionText, points: points, mediaUrl: '', revealText: '',
-          wheelEnabled: false, target: 'all', options: cleanOptions.slice(0, 4), correctIndex: correctIndex
-        });
-      } else {
-        results.push({
-          type: 'open', text: questionText, points: points, mediaUrl: '', revealText: '',
-          wheelEnabled: true, target: 'all', options: [], correctIndex: null
-        });
-      }
-    });
-
-    return { results, warnings };
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const results = lines.map(line => ({
+      type: 'open',
+      text: line,
+      points: 100,
+      mediaUrl: '',
+      revealText: '',
+      options: [],
+      correctIndex: null
+    }));
+    return { results: results, warnings: [] };
   }
 
   function parseAndPreviewBulk(){
@@ -1372,7 +1351,7 @@
 
     if(!text.trim()){ errEl.textContent = 'נא להדביק שאלות'; return; }
 
-    const { results, warnings } = parseBulkQuestions(text);
+    const { results } = parseBulkQuestions(text);
     bulkParsedQuestions = results;
 
     if(results.length === 0){
@@ -1381,14 +1360,10 @@
       return;
     }
 
-    let html = '<div class="section-title">זוהו ' + results.length + ' שאלות:</div>';
+    let html = '<div class="section-title">זוהו ' + results.length + ' שאלות (כל אחת תיכנס כשאלה בסיסית - תוכלו לערוך ולהוסיף אפשרויות/סוג לכל אחת בנפרד אחרי ההוספה):</div>';
     results.forEach((q, i) => {
-      const icon = q.type === 'mc' ? '📝' : '🎯';
-      html += '<div class="player-award-row"><span class="pname">' + (i + 1) + '. ' + icon + ' ' + q.text + '</span></div>';
+      html += '<div class="player-award-row"><span class="pname">' + (i + 1) + '. ' + q.text + '</span></div>';
     });
-    if(warnings.length > 0){
-      html += '<div style="margin-top:10px; color:var(--red); font-size:0.85rem;">⚠️ ' + warnings.join('<br>⚠️ ') + '</div>';
-    }
     previewEl.innerHTML = html;
     addBtn.style.display = 'block';
   }
@@ -1454,20 +1429,12 @@
         textDiv.className = 'bank-row-text';
         const icon = typeIcons[q.type] || '📝';
         const mediaIcon = q.mediaUrl ? ' 🖼️' : '';
-        const birthdayIcon = q.target === 'birthday' ? ' 🎂' : '';
-        textDiv.textContent = (idx + 1) + '. ' + icon + ' ' + q.text + mediaIcon + birthdayIcon;
+        const wheelIcon = q.type === 'open' ? ' 🎡' : '';
+        textDiv.textContent = (idx + 1) + '. ' + icon + ' ' + q.text + mediaIcon + wheelIcon;
         row.appendChild(textDiv);
 
         const actions = document.createElement('div');
         actions.className = 'bank-row-actions';
-
-        if(q.type === 'open' || q.type === 'reveal'){
-          const wheelBtn = document.createElement('button');
-          wheelBtn.className = 'wheel-toggle-btn ' + (q.wheelEnabled ? 'on' : 'off');
-          wheelBtn.textContent = '🎡 גלגל ' + (q.wheelEnabled ? 'פעיל' : 'כבוי');
-          wheelBtn.onclick = () => toggleWheelQuick(idx);
-          actions.appendChild(wheelBtn);
-        }
 
         const upBtn = document.createElement('button');
         upBtn.className = 'icon-btn';
@@ -1511,8 +1478,6 @@
       points: bankQuestion.points,
       mediaUrl: bankQuestion.mediaUrl || '',
       revealText: bankQuestion.revealText || '',
-      wheelEnabled: bankQuestion.wheelEnabled || false,
-      target: bankQuestion.target || 'all',
       options: bankQuestion.options,
       correctIndex: bankQuestion.correctIndex,
       answers: [],
@@ -1520,6 +1485,7 @@
       revealed: false,
       infoRevealed: false,
       wheelWinner: null,
+      wheelWinnerAvatar: null,
       wheelRotation: null
     };
   }
@@ -1591,7 +1557,7 @@
       const centerAngle = i * sliceAngle + sliceAngle / 2;
       const label = document.createElement('div');
       label.className = 'wheel-label';
-      label.textContent = p.name;
+      label.textContent = (p.avatar || pickAvatarForName(p.name)) + ' ' + p.name;
       label.style.transform = 'rotate(' + centerAngle + 'deg) translateX(20px)';
       discEl.appendChild(label);
     });
@@ -1605,24 +1571,18 @@
     });
   }
 
-  // ===== מנהל: השקת שאלה (עם גלגל אם צריך) =====
+  // ===== מנהל: השקת שאלה (עם גלגל תמיד לשאלה פתוחה) =====
   async function launchQuestion(currentQuestion, room, index){
     const roomRef = db.collection('rooms').doc(currentRoomCode);
     const players = room.players || [];
-    const usesWheel = (currentQuestion.type === 'open' || currentQuestion.type === 'reveal')
-      && currentQuestion.wheelEnabled
-      && currentQuestion.target !== 'birthday'
-      && players.length > 0;
-
-    if(currentQuestion.target === 'birthday' && room.birthdayName){
-      currentQuestion.wheelWinner = room.birthdayName;
-    }
+    const usesWheel = currentQuestion.type === 'open' && players.length > 0;
 
     if(usesWheel){
       const { winnerIndex, rotation } = pickWheelWinnerAndRotation(players);
       currentQuestion.wheelWinner = players[winnerIndex].name;
+      currentQuestion.wheelWinnerAvatar = players[winnerIndex].avatar || pickAvatarForName(players[winnerIndex].name);
       currentQuestion.wheelRotation = rotation;
-      currentQuestion.wheelPlayersSnapshot = players.map(p => p.name);
+      currentQuestion.wheelPlayersSnapshot = players.map(p => ({ name: p.name, avatar: p.avatar || pickAvatarForName(p.name) }));
 
       await roomRef.update({
         status: 'wheel',
@@ -1635,9 +1595,12 @@
       document.getElementById('hostWheelWinnerName').textContent = '';
       goTo('hostWheel');
       spinWheelDisc(discEl, rotation);
+      playSound('spin');
 
       setTimeout(async () => {
-        document.getElementById('hostWheelWinnerName').textContent = '🎉 ' + currentQuestion.wheelWinner;
+        document.getElementById('hostWheelWinnerName').textContent = currentQuestion.wheelWinnerAvatar + ' ' + currentQuestion.wheelWinner + ' 🎉';
+        playSound('tada');
+        fireConfetti();
         setTimeout(async () => {
           await roomRef.update({ status: 'question' });
           showQuestionOnHost(currentQuestion, players);
@@ -1657,6 +1620,7 @@
   function showQuestionOnHost(currentQuestion, players){
     renderHostLiveQuestion(currentQuestion, players);
     document.getElementById('hostRoundLeaderboard').innerHTML = '';
+    playSound('pop');
 
     if(currentQuestion.type === 'cloud'){
       document.getElementById('revealBtn').style.display = 'none';
@@ -1724,7 +1688,8 @@
     return sorted.map((p, idx) => {
       const medal = medals[idx] || (idx + 1) + '.';
       const meClass = p.name === highlightName ? ' me' : '';
-      return '<div class="leaderboard-row' + meClass + '"><span><span class="leaderboard-rank">' + medal + '</span>' + p.name + '</span><span>' + (p.score || 0) + ' נק׳</span></div>';
+      const avatar = p.avatar || pickAvatarForName(p.name);
+      return '<div class="leaderboard-row' + meClass + '"><span><span class="leaderboard-rank">' + medal + '</span>' + avatar + ' ' + p.name + '</span><span>' + (p.score || 0) + ' נק׳</span></div>';
     }).join('');
   }
 
@@ -1788,7 +1753,8 @@
         row.className = 'player-award-row';
         const nameSpan = document.createElement('span');
         nameSpan.className = 'pname';
-        nameSpan.textContent = p.name === q.wheelWinner ? '🎯 ' + p.name : p.name;
+        const avatar = p.avatar || pickAvatarForName(p.name);
+        nameSpan.textContent = p.name === q.wheelWinner ? '🎯 ' + avatar + ' ' + p.name : avatar + ' ' + p.name;
         row.appendChild(nameSpan);
         if(!q.revealed){
           const btn = document.createElement('button');
@@ -1803,6 +1769,14 @@
   }
 
   // ===== ענן מילים =====
+  const CLOUD_COLORS = ['#C98FCB', '#E85D8F', '#F0A8C0', '#B584C4', '#D6336C', '#7A4FA3', '#EC7FA9', '#9C4F9C'];
+
+  function colorForWord(word){
+    let hash = 0;
+    for(let i = 0; i < word.length; i++){ hash = (hash * 31 + word.charCodeAt(i)) >>> 0; }
+    return CLOUD_COLORS[hash % CLOUD_COLORS.length];
+  }
+
   function renderCloudInto(containerEl, words){
     const counts = {};
     words.forEach(w => {
@@ -1822,6 +1796,7 @@
       span.className = 'cloud-word';
       const size = 0.9 + (count / maxCount) * 1.6;
       span.style.fontSize = size + 'rem';
+      span.style.color = colorForWord(word);
       span.textContent = word;
       containerEl.appendChild(span);
     });
@@ -1867,6 +1842,7 @@
       document.getElementById('revealBoxText').textContent = cq.revealText;
       document.getElementById('revealInfoBtn').style.display = 'none';
       document.getElementById('nextQBtn').style.display = 'block';
+      playSound('tada');
       fireConfetti();
     }catch(e){
       console.error(e);
@@ -1903,6 +1879,7 @@
       document.getElementById('nextQBtn').style.display = 'block';
       document.getElementById('hostRoundLeaderboard').innerHTML =
         '<div class="section-title">לוח מקומות עדכני</div>' + leaderboardRowsHTML(players, null);
+      playSound('tada');
       fireConfetti();
     }catch(e){
       console.error(e);
@@ -1934,6 +1911,7 @@
       document.getElementById('nextQBtn').style.display = 'block';
       document.getElementById('hostRoundLeaderboard').innerHTML =
         '<div class="section-title">לוח מקומות עדכני</div>' + leaderboardRowsHTML(updatedPlayers, null);
+      playSound('tada');
       fireConfetti();
     }catch(e){
       console.error(e);
@@ -1950,24 +1928,31 @@
       if(room.status === 'wheel' && room.currentQuestion){
         if(lastSeenWheelId !== room.currentQuestion.id){
           lastSeenWheelId = room.currentQuestion.id;
-          const players = (room.currentQuestion.wheelPlayersSnapshot || []).map(n => ({ name: n }));
+          const players = room.currentQuestion.wheelPlayersSnapshot || [];
           const discEl = document.getElementById('playerWheelDisc');
           renderWheelDisc(discEl, players);
           document.getElementById('playerWheelWinnerName').textContent = '';
           goTo('playerWheel');
           spinWheelDisc(discEl, room.currentQuestion.wheelRotation);
+          playSound('spin');
           setTimeout(() => {
-            document.getElementById('playerWheelWinnerName').textContent = '🎉 ' + room.currentQuestion.wheelWinner;
+            document.getElementById('playerWheelWinnerName').textContent = (room.currentQuestion.wheelWinnerAvatar || '') + ' ' + room.currentQuestion.wheelWinner + ' 🎉';
+            playSound('tada');
+            fireConfetti();
           }, 4200);
         }
       } else if(room.status === 'question' && room.currentQuestion){
-        if(lastSeenQuestionId !== room.currentQuestion.id){
+        const isNewQuestion = lastSeenQuestionId !== room.currentQuestion.id;
+        if(isNewQuestion){
           lastSeenQuestionId = room.currentQuestion.id;
           hasAnsweredCurrent = false;
         }
         if(room.currentQuestion.type === 'cloud'){
-          renderPlayerQuestion(room.currentQuestion);
-          goTo('playerQuestion');
+          if(isNewQuestion){
+            renderPlayerQuestion(room.currentQuestion);
+            goTo('playerQuestion');
+          }
+          renderCloudInto(document.getElementById('pqCloudLive'), room.currentQuestion.cloudWords || []);
         } else if(!hasAnsweredCurrent){
           renderPlayerQuestion(room.currentQuestion);
           goTo('playerQuestion');
@@ -1998,6 +1983,7 @@
     renderMediaInto(document.getElementById('pqMediaContainer'), q.mediaUrl);
     document.getElementById('pqText').textContent = q.text;
     document.getElementById('pqPoints').textContent = q.type === 'mc' || q.type === 'open' ? (q.points + ' נקודות') : '';
+    playSound('pop');
     const mcArea = document.getElementById('pqMcArea');
     const openArea = document.getElementById('pqOpenArea');
     const cloudArea = document.getElementById('pqCloudArea');
@@ -2023,7 +2009,7 @@
       if(q.wheelWinner === currentPlayerName){
         openArea.innerHTML = '🎯 <strong>הגלגל בחר בכם!</strong><br>ענו בקול רם עכשיו';
       } else if(q.wheelWinner){
-        openArea.textContent = 'הגלגל בחר ב-' + q.wheelWinner + ' - בהצלחה!';
+        openArea.textContent = 'הגלגל בחר ב-' + (q.wheelWinnerAvatar || '') + ' ' + q.wheelWinner + ' - בהצלחה!';
       } else {
         openArea.textContent = 'שאלה פתוחה - ענו בקול רם!';
       }
@@ -2067,7 +2053,7 @@
     }
     banner.className = 'result-banner ' + (wasCorrect ? 'correct' : 'wrong');
     emoji.textContent = wasCorrect ? '🎉' : '🤔';
-    if(wasCorrect) fireConfetti();
+    if(wasCorrect){ playSound('correct'); fireConfetti(); } else { playSound('wrong'); }
 
     scoreLine.textContent = 'הניקוד שלך: ' + (me ? (me.score || 0) : 0);
     document.getElementById('playerRoundLeaderboard').innerHTML =
