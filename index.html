@@ -606,6 +606,22 @@
     border-radius: 12px;
     padding: 10px 14px;
     margin-bottom: 8px;
+    transition: box-shadow 0.15s ease;
+  }
+  .bank-row.dragging-row{
+    box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+    z-index: 50;
+    position: relative;
+    opacity: 0.95;
+  }
+  .drag-handle{
+    font-size: 1.3rem;
+    color: var(--ink-soft);
+    padding: 4px 6px;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    line-height: 1;
   }
   .bank-row-text{
     color: var(--ink);
@@ -1360,20 +1376,75 @@
     }
   }
 
-  // ===== מנהל: הזזת שאלה למעלה/למטה ברשימה =====
-  async function moveQuestionInBank(idx, direction){
-    const newIdx = idx + direction;
+  // ===== מנהל: גרירת שאלה לסידור מחדש =====
+  let dragState = null;
+
+  function onDragHandlePointerDown(e, idx){
+    e.preventDefault();
+    const listEl = document.getElementById('bankList');
+    const rowEl = listEl.children[idx];
+    if(!rowEl) return;
+    try{ rowEl.setPointerCapture(e.pointerId); }catch(err){}
+
+    dragState = {
+      idx: idx,
+      pointerId: e.pointerId,
+      startY: e.clientY,
+      rowEl: rowEl
+    };
+    rowEl.classList.add('dragging-row');
+
+    document.addEventListener('pointermove', onDragPointerMove);
+    document.addEventListener('pointerup', onDragPointerUp);
+  }
+
+  function onDragPointerMove(e){
+    if(!dragState) return;
+    const deltaY = e.clientY - dragState.startY;
+    dragState.rowEl.style.transform = 'translateY(' + deltaY + 'px)';
+  }
+
+  async function onDragPointerUp(e){
+    if(!dragState) return;
+    document.removeEventListener('pointermove', onDragPointerMove);
+    document.removeEventListener('pointerup', onDragPointerUp);
+
+    const listEl = document.getElementById('bankList');
+    const rows = Array.from(listEl.children);
+    const draggedRect = dragState.rowEl.getBoundingClientRect();
+    const draggedCenter = draggedRect.top + draggedRect.height / 2;
+
+    let targetIdx = rows.length - 1;
+    for(let i = 0; i < rows.length; i++){
+      if(rows[i] === dragState.rowEl) continue;
+      const rect = rows[i].getBoundingClientRect();
+      const rowCenter = rect.top + rect.height / 2;
+      if(draggedCenter < rowCenter){
+        targetIdx = parseInt(rows[i].dataset.idx);
+        break;
+      }
+    }
+
+    dragState.rowEl.classList.remove('dragging-row');
+    dragState.rowEl.style.transform = '';
+
+    const fromIdx = dragState.idx;
+    dragState = null;
+
+    if(targetIdx === fromIdx){ return; }
+
     try{
       const roomRef = db.collection('rooms').doc(currentRoomCode);
       const docSnap = await roomRef.get();
       const room = docSnap.data();
       const bank = room.questionBank || [];
-      if(newIdx < 0 || newIdx >= bank.length) return;
-      [bank[idx], bank[newIdx]] = [bank[newIdx], bank[idx]];
+      const [moved] = bank.splice(fromIdx, 1);
+      bank.splice(targetIdx, 0, moved);
       await roomRef.update({ questionBank: bank });
       refreshBankView();
-    }catch(e){
-      console.error(e);
+    }catch(err){
+      console.error(err);
+      refreshBankView();
     }
   }
 
@@ -1616,6 +1687,21 @@
       bank.forEach((q, idx) => {
         const row = document.createElement('div');
         row.className = 'bank-row';
+        row.dataset.idx = idx;
+
+        const rowInner = document.createElement('div');
+        rowInner.style.display = 'flex';
+        rowInner.style.alignItems = 'flex-start';
+        rowInner.style.gap = '10px';
+
+        const handle = document.createElement('div');
+        handle.className = 'drag-handle';
+        handle.textContent = '⠿';
+        handle.onpointerdown = (e) => onDragHandlePointerDown(e, idx);
+        rowInner.appendChild(handle);
+
+        const contentDiv = document.createElement('div');
+        contentDiv.style.flex = '1';
 
         const textDiv = document.createElement('div');
         textDiv.className = 'bank-row-text';
@@ -1624,24 +1710,10 @@
         const wheelIcon = (q.type === 'open' && q.wheelEnabled) ? ' 🎡' : '';
         const birthdayIcon = (q.type === 'open' && q.target === 'birthday') ? ' 🎂' : '';
         textDiv.textContent = (idx + 1) + '. ' + icon + ' ' + q.text + mediaIcon + wheelIcon + birthdayIcon;
-        row.appendChild(textDiv);
+        contentDiv.appendChild(textDiv);
 
         const actions = document.createElement('div');
         actions.className = 'bank-row-actions';
-
-        const upBtn = document.createElement('button');
-        upBtn.className = 'icon-btn';
-        upBtn.textContent = '⬆️';
-        upBtn.disabled = idx === 0;
-        upBtn.onclick = () => moveQuestionInBank(idx, -1);
-        actions.appendChild(upBtn);
-
-        const downBtn = document.createElement('button');
-        downBtn.className = 'icon-btn';
-        downBtn.textContent = '⬇️';
-        downBtn.disabled = idx === bank.length - 1;
-        downBtn.onclick = () => moveQuestionInBank(idx, 1);
-        actions.appendChild(downBtn);
 
         const editBtn = document.createElement('button');
         editBtn.className = 'icon-btn';
@@ -1655,7 +1727,9 @@
         delBtn.onclick = () => deleteQuestionFromBank(idx);
         actions.appendChild(delBtn);
 
-        row.appendChild(actions);
+        contentDiv.appendChild(actions);
+        rowInner.appendChild(contentDiv);
+        row.appendChild(rowInner);
         listEl.appendChild(row);
       });
     }catch(e){
