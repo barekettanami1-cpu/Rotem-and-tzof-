@@ -640,17 +640,27 @@
   }
   .wheel-toggle-btn.on{ background: var(--gold); color: var(--ink); }
   .wheel-toggle-btn.off{ background: #fff; color: var(--ink-soft); }
+  .intro-fullscreen{
+    position:fixed;
+    inset:0;
+    padding:0;
+    margin:0;
+    background:#000;
+    z-index:1000;
+    align-items:center;
+    justify-content:center;
+    max-width:none;
+  }
+  .intro-fullscreen.active{ display:flex; }
 </style>
 </head>
 <body>
 
   <!-- מסך פתיחה -->
   <!-- מסך פתיחה: סרטון אינטרו -->
-  <div id="introScreen" class="screen active">
-    <div class="card" style="text-align:center; padding:20px;">
-      <video id="introVideo" src="intro-video.mp4" controls autoplay playsinline muted style="width:100%; border-radius:14px; margin-bottom:16px; max-height:60vh;"></video>
-      <button class="btn btn-primary" onclick="goTo('landing')">כניסה למשחק 🎉</button>
-    </div>
+  <div id="introScreen" class="screen intro-fullscreen active">
+    <video id="introVideo" src="intro-video.mp4" autoplay playsinline muted onended="showIntroEnterButton()" onclick="goTo('landing')" style="width:100vw; height:100vh; object-fit:cover; display:block;"></video>
+    <button id="introEnterBtn" onclick="goTo('landing')" style="display:none; position:absolute; bottom:12%; left:50%; transform:translateX(-50%); background:var(--gold); color:var(--ink); border:none; border-radius:16px; padding:18px 36px; font-family:'Baloo 2', sans-serif; font-weight:700; font-size:1.2rem; box-shadow:0 6px 0 #D97FA0; animation:reveal-pop 0.5s ease;">🎉 כניסה למשחק</button>
   </div>
 
   <div id="landing" class="screen">
@@ -1009,6 +1019,11 @@
   function goTo(screenId){
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
+  }
+
+  function showIntroEnterButton(){
+    const btn = document.getElementById('introEnterBtn');
+    if(btn) btn.style.display = 'block';
   }
 
   // ===== עזרים =====
