@@ -645,7 +645,15 @@
 <body>
 
   <!-- מסך פתיחה -->
-  <div id="landing" class="screen active">
+  <!-- מסך פתיחה: סרטון אינטרו -->
+  <div id="introScreen" class="screen active">
+    <div class="card" style="text-align:center; padding:20px;">
+      <video id="introVideo" src="intro-video.mp4" controls autoplay playsinline muted style="width:100%; border-radius:14px; margin-bottom:16px; max-height:60vh;"></video>
+      <button class="btn btn-primary" onclick="goTo('landing')">כניסה למשחק 🎉</button>
+    </div>
+  </div>
+
+  <div id="landing" class="screen">
     <div class="wheel-mark"></div>
     <h1 class="title">יומולדת לצוף ולרותם</h1>
     <p class="subtitle">תתכוננו לערב מרגש</p>
@@ -867,7 +875,10 @@
         <button class="btn btn-primary" id="cloudSubmitBtn" onclick="submitCloudWord()">שלחו</button>
         <div id="pqCloudLive" class="cloud-box" style="margin-top:14px;"></div>
       </div>
-      <div id="pqRevealArea" style="display:none; text-align:center; color:var(--ink-soft); padding:20px 0;">צפו במסך הראשי 👀</div>
+      <div id="pqRevealArea" style="display:none; text-align:center;">
+        <p id="pqRevealWaiting" style="color:var(--ink-soft); padding:20px 0;">צפו במסך הראשי 👀</p>
+        <div class="reveal-box" id="pqRevealBox"><div class="reveal-text" id="pqRevealBoxText"></div></div>
+      </div>
     </div>
   </div>
 
@@ -1589,12 +1600,12 @@
   // ===== מדיה: תמונה / וידאו / יוטיוב / קול =====
   function renderMediaInto(containerEl, url){
     containerEl.innerHTML = '';
-    if(!url) return;
+    const finalUrl = url || 'default-image.jpg';
     const wrap = document.createElement('div');
     wrap.className = 'question-media';
 
     let ytId = null;
-    const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/shorts\/)([A-Za-z0-9_-]{6,})/);
+    const ytMatch = finalUrl.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/shorts\/)([A-Za-z0-9_-]{6,})/);
     if(ytMatch) ytId = ytMatch[1];
 
     if(ytId){
@@ -1603,21 +1614,21 @@
       iframe.allow = 'autoplay; encrypted-media';
       iframe.allowFullscreen = true;
       wrap.appendChild(iframe);
-    } else if(/\.(mp3|wav|m4a|ogg)(\?.*)?$/i.test(url)){
+    } else if(/\.(mp3|wav|m4a|ogg)(\?.*)?$/i.test(finalUrl)){
       const audio = document.createElement('audio');
-      audio.src = url;
+      audio.src = finalUrl;
       audio.controls = true;
       audio.style.width = '100%';
       wrap.style.background = 'transparent';
       wrap.appendChild(audio);
-    } else if(/\.(mp4|webm|mov)(\?.*)?$/i.test(url)){
+    } else if(/\.(mp4|webm|mov)(\?.*)?$/i.test(finalUrl)){
       const video = document.createElement('video');
-      video.src = url;
+      video.src = finalUrl;
       video.controls = true;
       wrap.appendChild(video);
     } else {
       const img = document.createElement('img');
-      img.src = url;
+      img.src = finalUrl;
       img.alt = 'תמונת שאלה';
       wrap.appendChild(img);
     }
@@ -2061,6 +2072,16 @@
             goTo('playerQuestion');
           }
           renderCloudInto(document.getElementById('pqCloudLive'), room.currentQuestion.cloudWords || []);
+        } else if(room.currentQuestion.type === 'reveal'){
+          if(isNewQuestion){
+            renderPlayerQuestion(room.currentQuestion);
+            goTo('playerQuestion');
+          }
+          if(room.currentQuestion.infoRevealed){
+            document.getElementById('pqRevealWaiting').style.display = 'none';
+            document.getElementById('pqRevealBoxText').textContent = room.currentQuestion.revealText;
+            document.getElementById('pqRevealBox').classList.add('shown');
+          }
         } else if(!hasAnsweredCurrent){
           renderPlayerQuestion(room.currentQuestion);
           goTo('playerQuestion');
@@ -2112,6 +2133,8 @@
       cloudArea.style.display = 'block';
     } else if(q.type === 'reveal'){
       revealArea.style.display = 'block';
+      document.getElementById('pqRevealBox').classList.remove('shown');
+      document.getElementById('pqRevealWaiting').style.display = 'block';
     } else {
       openArea.style.display = 'block';
       if(q.wheelWinner === currentPlayerName){
