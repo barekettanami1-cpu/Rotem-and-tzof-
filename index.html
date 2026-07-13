@@ -676,6 +676,7 @@
         <div class="room-code" id="roomCodeDisplay">----</div>
       </div>
       <h2 style="font-size:1.1rem; margin-bottom:8px;">שחקנים בחדר (<span id="playerCount">0</span>)</h2>
+      <p style="font-size:0.82rem; color:var(--ink-soft); margin-bottom:8px;">לחצו על שם כדי לסמן חוגגת/חוגג 🎂 (אפשר יותר מאחת)</p>
       <ul class="player-list" id="playerList"></ul>
       <div class="empty-hint" id="emptyHint">עדיין אין שחקנים - שלחו להם את הקוד</div>
       <button class="btn btn-primary" onclick="goTo('hostQuestionBank'); refreshBankView();" style="margin-top:10px;">הכינו שאלות והתחילו</button>
@@ -713,6 +714,11 @@
       <p style="font-size:0.85rem; color:var(--ink-soft); line-height:1.6; margin-bottom:12px;">
         פשוט הדביקו את כל השאלות שלכם, <strong>שורה אחת לכל שאלה</strong> - בלי אפשרויות ובלי תשובות, רק הטקסט. כל שאלה תיכנס לרשימה כשאלה בסיסית, ואחר כך תוכלו ללחוץ ✏️ עריכה על כל שאלה בנפרד כדי להפוך אותה לשאלה עם אפשרויות, ענן מילים, או חשיפת מידע - ולהוסיף תמונה אם רוצים.
       </p>
+      <label class="btn btn-secondary" style="display:block; text-align:center; cursor:pointer; margin-bottom:14px;">
+        📄 העלו קובץ PDF וטענו ממנו טקסט אוטומטית
+        <input type="file" accept="application/pdf" id="pdfFileInput" style="display:none;" onchange="handlePdfUpload(event)">
+      </label>
+      <div id="pdfStatus" style="font-size:0.82rem; color:var(--ink-soft); margin-bottom:10px; text-align:center;"></div>
       <textarea class="qtext" id="bulkTextInput" style="min-height:220px;" placeholder="מה הצבע האהוב על רותם?
 איפה צוף ורותם נפגשו לראשונה?
 מה השיר האהוב על החוגגת?
@@ -745,6 +751,21 @@
       <div class="points-row" id="pointsRow">
         <label for="pointsInput">ניקוד לשאלה:</label>
         <input type="number" class="points-input" id="pointsInput" value="100" min="10" step="10">
+      </div>
+      <div id="wheelTargetRow" style="display:none; margin-bottom:14px;">
+        <div class="points-row">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" id="wheelEnabledInput" checked style="width:18px; height:18px;">
+            הפעילו גלגל מזל לפני השאלה
+          </label>
+        </div>
+        <div class="points-row">
+          <label for="targetSelect">מי יכול/ה להיבחר:</label>
+          <select id="targetSelect" style="padding:8px 10px; border-radius:10px; border:2px solid #E3D9C5;">
+            <option value="all">כל המשתתפים</option>
+            <option value="birthday">החוגגות בלבד</option>
+          </select>
+        </div>
       </div>
       <div id="optionsContainer">
         <div class="option-row">
@@ -896,6 +917,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
   // ===== חיבור ל-Firebase =====
   const firebaseConfig = {
@@ -1067,16 +1089,37 @@
       const listEl = document.getElementById('playerList');
       const countEl = document.getElementById('playerCount');
       const emptyHint = document.getElementById('emptyHint');
+      const birthdayNames = room.birthdayNames || [];
       listEl.innerHTML = '';
       countEl.textContent = room.players.length;
       emptyHint.style.display = room.players.length === 0 ? 'block' : 'none';
       room.players.forEach(p => {
         const li = document.createElement('li');
-        li.className = 'player-chip';
-        li.textContent = (p.avatar || pickAvatarForName(p.name)) + ' ' + p.name;
+        const isBirthday = birthdayNames.includes(p.name);
+        li.className = 'player-chip' + (isBirthday ? ' birthday' : '');
+        li.textContent = (isBirthday ? '🎂 ' : '') + (p.avatar || pickAvatarForName(p.name)) + ' ' + p.name;
+        li.onclick = () => toggleBirthday(p.name);
         listEl.appendChild(li);
       });
     });
+  }
+
+  // ===== מנהל: סימון/ביטול חוגגת (אפשר יותר מאחת) =====
+  async function toggleBirthday(name){
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      let birthdayNames = room.birthdayNames || [];
+      if(birthdayNames.includes(name)){
+        birthdayNames = birthdayNames.filter(n => n !== name);
+      } else {
+        birthdayNames = birthdayNames.concat([name]);
+      }
+      await roomRef.update({ birthdayNames: birthdayNames });
+    }catch(e){
+      console.error(e);
+    }
   }
 
   // ===== שחקן: הצטרפות =====
@@ -1139,12 +1182,13 @@
 
     document.getElementById('optionsContainer').style.display = type === 'mc' ? 'block' : 'none';
     document.getElementById('revealTextInput').style.display = type === 'reveal' ? 'block' : 'none';
+    document.getElementById('wheelTargetRow').style.display = type === 'open' ? 'block' : 'none';
     document.getElementById('pointsRow').style.display = (type === 'mc' || type === 'open') ? 'flex' : 'none';
 
     const hints = {
       mc: 'שחקנים בוחרים תשובה מהטלפון שלהם.',
-      open: '🎡 גלגל המזל תמיד יבחר מי עונה מבין המשתתפים שהצטרפו.',
-      cloud: 'כל השחקנים כותבים תשובה קצרה, והמילים הנפוצות מוצגות גדולות יותר.',
+      open: 'בחרו למטה אם להפעיל גלגל מזל ומי יכול/ה להיבחר.',
+      cloud: 'כל השחקנים כותבים תשובה קצרה, והמילים הנפוצות מוצגות גדולות יותר, בזמן אמת אצל כולם.',
       reveal: 'מציגים מידע/עובדה, ולוחצים כפתור כדי לחשוף אותו באנימציה.'
     };
     document.getElementById('typeHint').textContent = hints[type] || '';
@@ -1161,6 +1205,8 @@
     document.getElementById('questionTextInput').value = '';
     document.getElementById('mediaUrlInput').value = '';
     document.getElementById('revealTextInput').value = '';
+    document.getElementById('wheelEnabledInput').checked = true;
+    document.getElementById('targetSelect').value = 'all';
     document.querySelectorAll('#optionsContainer input[type=text]').forEach(i => i.value = '');
     selectedCorrectIndex = null;
     document.querySelectorAll('.correct-check').forEach(b => b.classList.remove('selected'));
@@ -1183,6 +1229,8 @@
       document.getElementById('mediaUrlInput').value = q.mediaUrl || '';
       document.getElementById('revealTextInput').value = q.revealText || '';
       document.getElementById('pointsInput').value = q.points || 100;
+      document.getElementById('wheelEnabledInput').checked = q.wheelEnabled !== false;
+      document.getElementById('targetSelect').value = q.target || 'all';
 
       if(q.type === 'mc'){
         const inputs = document.querySelectorAll('#optionsContainer input[type=text]');
@@ -1256,6 +1304,8 @@
       points: points,
       mediaUrl: mediaUrl,
       revealText: revealText,
+      wheelEnabled: selectedQuestionType === 'open' ? document.getElementById('wheelEnabledInput').checked : false,
+      target: selectedQuestionType === 'open' ? document.getElementById('targetSelect').value : 'all',
       options: options,
       correctIndex: selectedQuestionType === 'mc' ? selectedCorrectIndex : null
     };
@@ -1340,6 +1390,49 @@
       correctIndex: null
     }));
     return { results: results, warnings: [] };
+  }
+
+  // ===== מנהל: קריאת קובץ PDF והפיכתו לרשימת שורות =====
+  if(window.pdfjsLib){
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+
+  function extractLinesFromTextContent(content){
+    const lines = {};
+    content.items.forEach(item => {
+      const y = Math.round(item.transform[5]);
+      if(!lines[y]) lines[y] = [];
+      lines[y].push({ x: item.transform[4], str: item.str });
+    });
+    const sortedY = Object.keys(lines).map(Number).sort((a, b) => b - a);
+    return sortedY
+      .map(y => lines[y].sort((a, b) => a.x - b.x).map(i => i.str).join(' ').trim())
+      .filter(Boolean);
+  }
+
+  async function handlePdfUpload(event){
+    const file = event.target.files[0];
+    if(!file) return;
+    const statusEl = document.getElementById('pdfStatus');
+    statusEl.textContent = 'קוראים את הקובץ...';
+
+    try{
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let allLines = [];
+      for(let i = 1; i <= pdf.numPages; i++){
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        allLines = allLines.concat(extractLinesFromTextContent(content));
+      }
+      const textarea = document.getElementById('bulkTextInput');
+      textarea.value = (textarea.value ? textarea.value + '\n' : '') + allLines.join('\n');
+      statusEl.textContent = 'נטענו ' + allLines.length + ' שורות מתוך ' + pdf.numPages + ' עמודים. אפשר לערוך את הטקסט למטה לפני הבדיקה.';
+    }catch(e){
+      statusEl.textContent = 'שגיאה בקריאת ה-PDF: ' + (e && e.message ? e.message : e);
+      console.error(e);
+    }
+    event.target.value = '';
   }
 
   function parseAndPreviewBulk(){
@@ -1429,8 +1522,9 @@
         textDiv.className = 'bank-row-text';
         const icon = typeIcons[q.type] || '📝';
         const mediaIcon = q.mediaUrl ? ' 🖼️' : '';
-        const wheelIcon = q.type === 'open' ? ' 🎡' : '';
-        textDiv.textContent = (idx + 1) + '. ' + icon + ' ' + q.text + mediaIcon + wheelIcon;
+        const wheelIcon = (q.type === 'open' && q.wheelEnabled) ? ' 🎡' : '';
+        const birthdayIcon = (q.type === 'open' && q.target === 'birthday') ? ' 🎂' : '';
+        textDiv.textContent = (idx + 1) + '. ' + icon + ' ' + q.text + mediaIcon + wheelIcon + birthdayIcon;
         row.appendChild(textDiv);
 
         const actions = document.createElement('div');
@@ -1478,6 +1572,8 @@
       points: bankQuestion.points,
       mediaUrl: bankQuestion.mediaUrl || '',
       revealText: bankQuestion.revealText || '',
+      wheelEnabled: bankQuestion.wheelEnabled || false,
+      target: bankQuestion.target || 'all',
       options: bankQuestion.options,
       correctIndex: bankQuestion.correctIndex,
       answers: [],
@@ -1574,15 +1670,24 @@
   // ===== מנהל: השקת שאלה (עם גלגל תמיד לשאלה פתוחה) =====
   async function launchQuestion(currentQuestion, room, index){
     const roomRef = db.collection('rooms').doc(currentRoomCode);
-    const players = room.players || [];
-    const usesWheel = currentQuestion.type === 'open' && players.length > 0;
+    const allPlayers = room.players || [];
+    const birthdayNames = room.birthdayNames || [];
+
+    let pool = allPlayers;
+    if(currentQuestion.type === 'open' && currentQuestion.target === 'birthday'){
+      const filtered = allPlayers.filter(p => birthdayNames.includes(p.name));
+      pool = filtered.length > 0 ? filtered : allPlayers;
+    }
+    currentQuestion.eligiblePlayerNames = pool.map(p => p.name);
+
+    const usesWheel = currentQuestion.type === 'open' && currentQuestion.wheelEnabled && pool.length > 0;
 
     if(usesWheel){
-      const { winnerIndex, rotation } = pickWheelWinnerAndRotation(players);
-      currentQuestion.wheelWinner = players[winnerIndex].name;
-      currentQuestion.wheelWinnerAvatar = players[winnerIndex].avatar || pickAvatarForName(players[winnerIndex].name);
+      const { winnerIndex, rotation } = pickWheelWinnerAndRotation(pool);
+      currentQuestion.wheelWinner = pool[winnerIndex].name;
+      currentQuestion.wheelWinnerAvatar = pool[winnerIndex].avatar || pickAvatarForName(pool[winnerIndex].name);
       currentQuestion.wheelRotation = rotation;
-      currentQuestion.wheelPlayersSnapshot = players.map(p => ({ name: p.name, avatar: p.avatar || pickAvatarForName(p.name) }));
+      currentQuestion.wheelPlayersSnapshot = pool.map(p => ({ name: p.name, avatar: p.avatar || pickAvatarForName(p.name) }));
 
       await roomRef.update({
         status: 'wheel',
@@ -1591,7 +1696,7 @@
       });
 
       const discEl = document.getElementById('hostWheelDisc');
-      renderWheelDisc(discEl, players);
+      renderWheelDisc(discEl, pool);
       document.getElementById('hostWheelWinnerName').textContent = '';
       goTo('hostWheel');
       spinWheelDisc(discEl, rotation);
@@ -1603,7 +1708,7 @@
         fireConfetti();
         setTimeout(async () => {
           await roomRef.update({ status: 'question' });
-          showQuestionOnHost(currentQuestion, players);
+          showQuestionOnHost(currentQuestion, allPlayers);
         }, 1400);
       }, 4200);
 
@@ -1613,7 +1718,7 @@
         currentQuestionIndex: index,
         currentQuestion: currentQuestion
       });
-      showQuestionOnHost(currentQuestion, players);
+      showQuestionOnHost(currentQuestion, allPlayers);
     }
   }
 
@@ -1743,7 +1848,10 @@
       document.getElementById('nextQBtn').style.display = q.infoRevealed ? 'block' : 'none';
     } else {
       // open
-      const orderedPlayers = [...players].sort((a, b) => {
+      const eligible = q.eligiblePlayerNames && q.eligiblePlayerNames.length > 0
+        ? players.filter(p => q.eligiblePlayerNames.includes(p.name))
+        : players;
+      const orderedPlayers = [...eligible].sort((a, b) => {
         if(a.name === q.wheelWinner) return -1;
         if(b.name === q.wheelWinner) return 1;
         return 0;
