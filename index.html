@@ -454,6 +454,36 @@
     margin-top: 4px;
   }
 
+  /* ---- Truth or Dare bottle ---- */
+  .bottle-dial{
+    position:relative;
+    width:220px;
+    height:220px;
+    margin:10px auto 0;
+    border-radius:50%;
+    background: radial-gradient(circle, #FFF3F8 0%, #FBE4EC 100%);
+    border: 4px solid var(--card);
+    box-shadow: 0 8px 24px rgba(91,44,70,0.2);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .bottle-label{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:1.05rem;
+    color: var(--red);
+  }
+  .bottle-label-top{ top:12px; }
+  .bottle-label-bottom{ bottom:12px; }
+  .bottle-shape{
+    font-size:4.5rem;
+    transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+  }
+
   /* ---- Media in questions ---- */
   .question-media{
     width:100%;
@@ -623,6 +653,18 @@
     user-select: none;
     line-height: 1;
   }
+  input.position-input{
+    width: 50px;
+    padding: 4px 6px;
+    border-radius: 8px;
+    border: 2px solid #E3D9C5;
+    background: #FFFDF9;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size: 0.9rem;
+    text-align:center;
+    color: var(--ink);
+  }
   .bank-row-text{
     color: var(--ink);
     font-weight:600;
@@ -727,6 +769,7 @@
       <div id="bankList" style="margin-bottom:16px;"></div>
       <div class="empty-hint" id="bankEmptyHint">עדיין לא הוספתם שאלות</div>
       <button class="btn btn-secondary" onclick="resetQuestionForm(); goTo('hostCreateQuestion')">הוסיפו שאלה</button>
+      <button class="btn btn-secondary" onclick="openTodBankScreen()">🍾 ניהול מאגר אמת/חובה</button>
       <button class="btn btn-secondary" onclick="goTo('hostBulkImport')">➕ הוספה מהירה מרשימה</button>
       <button class="btn btn-secondary" onclick="exportQuestionBank()">ייצוא השאלות לקובץ</button>
       <label class="btn btn-secondary" style="display:block; text-align:center; cursor:pointer;">
@@ -739,6 +782,57 @@
   </div>
 
   <!-- מסך מנהל: הוספה מהירה מרשימת טקסט -->
+  <!-- מסך מנהל: ניהול מאגר אמת/חובה -->
+  <div id="hostTodBank" class="screen">
+    <div class="card">
+      <div class="eyebrow">מנהל/ת</div>
+      <h2>🍾 מאגר אמת או חובה</h2>
+      <p style="font-size:0.82rem; color:var(--ink-soft); margin-bottom:10px;">שורה אחת לכל שאלה/משימה. המשחק יבחר אקראית ולא יחזור על אותה אחת פעמיים.</p>
+      <p style="font-weight:700; margin-bottom:6px;">🟢 שאלות אמת</p>
+      <textarea class="qtext" id="truthPoolInput" style="min-height:140px;" placeholder="מה הדבר הכי מביך שקרה לך?
+מי המשפחה שהכי קרובה אליך?"></textarea>
+      <p style="font-weight:700; margin-bottom:6px;">🔴 משימות חובה</p>
+      <textarea class="qtext" id="darePoolInput" style="min-height:140px;" placeholder="תרקדו ריקוד מצחיק במשך 10 שניות
+תחקו מישהו מהחדר"></textarea>
+      <div class="error" id="todBankError"></div>
+      <button class="btn btn-primary" onclick="saveTodBank()">שמרו מאגר</button>
+    </div>
+    <div style="text-align:center;"><span class="back-link" onclick="goTo('hostQuestionBank')">חזרה לרשימה</span></div>
+  </div>
+
+  <!-- מסך מנהל: סיבוב בקבוק -->
+  <div id="hostTodScreen" class="screen">
+    <div class="card" style="text-align:center;">
+      <div class="eyebrow">אמת או חובה</div>
+      <div class="bottle-dial">
+        <div class="bottle-label bottle-label-top">אמת</div>
+        <div class="bottle-label bottle-label-bottom">חובה</div>
+        <div class="bottle-shape" id="hostBottle">🍾</div>
+      </div>
+      <div id="hostTodResult" style="display:none; margin-top:18px;">
+        <div class="points-pill" id="hostTodCategory"></div>
+        <div class="reveal-text" id="hostTodPrompt" style="margin-top:10px;"></div>
+      </div>
+      <button class="btn btn-secondary" id="todNextBtn" onclick="nextQuestionFromBank()" style="display:none; margin-top:16px;">שאלה הבאה</button>
+    </div>
+  </div>
+
+  <!-- מסך שחקן: סיבוב בקבוק -->
+  <div id="playerTodScreen" class="screen">
+    <div class="card" style="text-align:center;">
+      <div class="eyebrow">אמת או חובה</div>
+      <div class="bottle-dial">
+        <div class="bottle-label bottle-label-top">אמת</div>
+        <div class="bottle-label bottle-label-bottom">חובה</div>
+        <div class="bottle-shape" id="playerBottle">🍾</div>
+      </div>
+      <div id="playerTodResult" style="display:none; margin-top:18px;">
+        <div class="points-pill" id="playerTodCategory"></div>
+        <div class="reveal-text" id="playerTodPrompt" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
+
   <div id="hostBulkImport" class="screen">
     <div class="card">
       <div class="eyebrow">מנהל/ת</div>
@@ -775,11 +869,20 @@
       <div class="type-toggle" style="margin-top:-8px;">
         <button type="button" class="type-btn" id="typeBtnCloud" onclick="setQuestionType('cloud')">ענן מילים</button>
         <button type="button" class="type-btn" id="typeBtnReveal" onclick="setQuestionType('reveal')">חשיפת מידע</button>
+        <button type="button" class="type-btn" id="typeBtnTod" onclick="setQuestionType('tod')">🍾 אמת או חובה</button>
       </div>
       <p id="typeHint" style="font-size:0.8rem; color:var(--ink-soft); margin:6px 0 12px;"></p>
       <textarea class="qtext" id="questionTextInput" placeholder="כתבו כאן את השאלה..."></textarea>
       <textarea class="qtext" id="revealTextInput" placeholder="הטקסט שייחשף בלחיצת כפתור..." style="display:none;"></textarea>
-      <input type="text" class="media-input" id="mediaUrlInput" placeholder="קישור לתמונה/סרטון/יוטיוב/הקלטה קולית (רשות)">
+      <label class="btn btn-secondary" id="imageUploadLabel" style="display:block; text-align:center; cursor:pointer; margin-bottom:10px;">
+        📷 העלו תמונה מהטלפון
+        <input type="file" accept="image/*" id="imageFileInput" style="display:none;" onchange="handleImageUpload(event)">
+      </label>
+      <div id="imagePreviewWrap" style="display:none; text-align:center; margin-bottom:10px;">
+        <img id="imagePreview" style="max-width:160px; max-height:160px; border-radius:12px;">
+        <div><button type="button" class="icon-btn danger" onclick="clearUploadedImage()" style="margin-top:6px;">🗑️ הסירו תמונה</button></div>
+      </div>
+      <input type="text" class="media-input" id="mediaUrlInput" placeholder="או קישור ליוטיוב / הקלטה קולית (רשות)">
       <div class="points-row" id="pointsRow">
         <label for="pointsInput">ניקוד לשאלה:</label>
         <input type="number" class="points-input" id="pointsInput" value="100" min="10" step="10">
@@ -1282,11 +1385,52 @@
   let selectedQuestionType = 'mc';
   let selectedCorrectIndex = null;
   let editingQuestionIndex = null;
+  let uploadedImageDataUrl = null;
   let hasAnsweredCurrent = false;
   let lastSeenQuestionId = null;
   let lastSeenWheelId = null;
   let unsubscribePlayer = null;
   let unsubscribeHostQuestion = null;
+
+  // ===== מנהל: העלאת תמונה מהטלפון - דחיסה והמרה ל-base64 =====
+  function handleImageUpload(event){
+    const file = event.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const img = new Image();
+      img.onload = function(){
+        const maxDim = 700;
+        let w = img.width, h = img.height;
+        if(w > h && w > maxDim){ h = Math.round(h * maxDim / w); w = maxDim; }
+        else if(h > maxDim){ w = Math.round(w * maxDim / h); h = maxDim; }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        uploadedImageDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+
+        document.getElementById('imagePreview').src = uploadedImageDataUrl;
+        document.getElementById('imagePreviewWrap').style.display = 'block';
+        document.getElementById('mediaUrlInput').value = '';
+        document.getElementById('mediaUrlInput').disabled = true;
+        document.getElementById('mediaUrlInput').placeholder = 'הועלתה תמונה - קישור לא נחוץ';
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  }
+
+  function clearUploadedImage(){
+    uploadedImageDataUrl = null;
+    document.getElementById('imagePreviewWrap').style.display = 'none';
+    document.getElementById('imagePreview').src = '';
+    document.getElementById('mediaUrlInput').disabled = false;
+    document.getElementById('mediaUrlInput').placeholder = 'או קישור ליוטיוב / הקלטה קולית (רשות)';
+  }
 
   function setQuestionType(type){
     selectedQuestionType = type;
@@ -1294,17 +1438,24 @@
     document.getElementById('typeBtnOpen').classList.toggle('active', type === 'open');
     document.getElementById('typeBtnCloud').classList.toggle('active', type === 'cloud');
     document.getElementById('typeBtnReveal').classList.toggle('active', type === 'reveal');
+    document.getElementById('typeBtnTod').classList.toggle('active', type === 'tod');
 
     document.getElementById('optionsContainer').style.display = type === 'mc' ? 'block' : 'none';
     document.getElementById('revealTextInput').style.display = type === 'reveal' ? 'block' : 'none';
     document.getElementById('wheelTargetRow').style.display = type === 'open' ? 'block' : 'none';
     document.getElementById('pointsRow').style.display = (type === 'mc' || type === 'open') ? 'flex' : 'none';
 
+    const hideForTod = type === 'tod';
+    document.getElementById('questionTextInput').style.display = hideForTod ? 'none' : 'block';
+    document.getElementById('imageUploadLabel').style.display = hideForTod ? 'none' : 'block';
+    document.getElementById('mediaUrlInput').style.display = hideForTod ? 'none' : 'block';
+
     const hints = {
       mc: 'שחקנים בוחרים תשובה מהטלפון שלהם.',
       open: 'בחרו למטה אם להפעיל גלגל מזל ומי יכול/ה להיבחר.',
       cloud: 'כל השחקנים כותבים תשובה קצרה, והמילים הנפוצות מוצגות גדולות יותר, בזמן אמת אצל כולם.',
-      reveal: 'מציגים מידע/עובדה, ולוחצים כפתור כדי לחשוף אותו באנימציה.'
+      reveal: 'מציגים מידע/עובדה, ולוחצים כפתור כדי לחשוף אותו באנימציה.',
+      tod: 'בקבוק מסתובב ונוחת על אמת או חובה, ואז נבחרת שאלה אקראית מהמאגר (בלי חזרות). הכינו את המאגר במסך "ניהול אמת/חובה" בבנק השאלות.'
     };
     document.getElementById('typeHint').textContent = hints[type] || '';
   }
@@ -1325,6 +1476,7 @@
     document.querySelectorAll('#optionsContainer input[type=text]').forEach(i => i.value = '');
     selectedCorrectIndex = null;
     document.querySelectorAll('.correct-check').forEach(b => b.classList.remove('selected'));
+    clearUploadedImage();
     setQuestionType('mc');
     editingQuestionIndex = null;
     document.getElementById('saveQuestionBtn').textContent = 'הוסיפו לרשימת השאלות';
@@ -1341,11 +1493,20 @@
       editingQuestionIndex = idx;
       setQuestionType(q.type);
       document.getElementById('questionTextInput').value = q.text || '';
-      document.getElementById('mediaUrlInput').value = q.mediaUrl || '';
       document.getElementById('revealTextInput').value = q.revealText || '';
       document.getElementById('pointsInput').value = q.points || 100;
       document.getElementById('wheelEnabledInput').checked = q.wheelEnabled !== false;
       document.getElementById('targetSelect').value = q.target || 'all';
+
+      clearUploadedImage();
+      if(q.mediaUrl && q.mediaUrl.startsWith('data:image')){
+        uploadedImageDataUrl = q.mediaUrl;
+        document.getElementById('imagePreview').src = q.mediaUrl;
+        document.getElementById('imagePreviewWrap').style.display = 'block';
+        document.getElementById('mediaUrlInput').disabled = true;
+      } else {
+        document.getElementById('mediaUrlInput').value = q.mediaUrl || '';
+      }
 
       if(q.type === 'mc'){
         const inputs = document.querySelectorAll('#optionsContainer input[type=text]');
@@ -1404,6 +1565,27 @@
     dragState.rowEl.style.transform = 'translateY(' + deltaY + 'px)';
   }
 
+  // ===== מנהל: הזזת שאלה למיקום לפי מספר =====
+  async function moveQuestionToPosition(fromIdx, newPosition1Based){
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const bank = room.questionBank || [];
+      let targetIdx = newPosition1Based - 1;
+      if(targetIdx < 0) targetIdx = 0;
+      if(targetIdx > bank.length - 1) targetIdx = bank.length - 1;
+      if(targetIdx === fromIdx){ refreshBankView(); return; }
+
+      const [moved] = bank.splice(fromIdx, 1);
+      bank.splice(targetIdx, 0, moved);
+      await roomRef.update({ questionBank: bank });
+      refreshBankView();
+    }catch(e){
+      console.error(e);
+    }
+  }
+
   async function onDragPointerUp(e){
     if(!dragState) return;
     document.removeEventListener('pointermove', onDragPointerMove);
@@ -1452,12 +1634,12 @@
   async function addQuestionToBank(){
     const text = document.getElementById('questionTextInput').value.trim();
     const points = parseInt(document.getElementById('pointsInput').value) || 100;
-    const mediaUrl = document.getElementById('mediaUrlInput').value.trim();
+    const mediaUrl = uploadedImageDataUrl || document.getElementById('mediaUrlInput').value.trim();
     const revealText = document.getElementById('revealTextInput').value.trim();
     const errEl = document.getElementById('questionError');
     errEl.textContent = '';
 
-    if(!text){ errEl.textContent = 'נא לכתוב שאלה'; return; }
+    if(selectedQuestionType !== 'tod' && !text){ errEl.textContent = 'נא לכתוב שאלה'; return; }
     if(selectedQuestionType === 'reveal' && !revealText){ errEl.textContent = 'נא לכתוב את המידע לחשיפה'; return; }
 
     let options = [];
@@ -1507,6 +1689,113 @@
     selectedPlayOrder = order;
     document.getElementById('orderBtnSeq').classList.toggle('active', order === 'sequential');
     document.getElementById('orderBtnRand').classList.toggle('active', order === 'random');
+  }
+
+  // ===== מנהל: ניהול מאגר אמת/חובה =====
+  async function openTodBankScreen(){
+    try{
+      const docSnap = await db.collection('rooms').doc(currentRoomCode).get();
+      const room = docSnap.data();
+      document.getElementById('truthPoolInput').value = (room.truthPool || []).join('\n');
+      document.getElementById('darePoolInput').value = (room.darePool || []).join('\n');
+      goTo('hostTodBank');
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  async function saveTodBank(){
+    const truthPool = document.getElementById('truthPoolInput').value.split('\n').map(l => l.trim()).filter(Boolean);
+    const darePool = document.getElementById('darePoolInput').value.split('\n').map(l => l.trim()).filter(Boolean);
+    const errEl = document.getElementById('todBankError');
+    errEl.textContent = '';
+
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      await roomRef.update({ truthPool: truthPool, darePool: darePool });
+      goTo('hostQuestionBank');
+      refreshBankView();
+    }catch(e){
+      errEl.textContent = 'שגיאה: ' + (e && e.message ? e.message : e);
+      console.error(e);
+    }
+  }
+
+  // בוחר פריט אקראי מהמאגר שעדיין לא נבחר; אם כולם נבחרו - מתחילים סבב חדש
+  function pickRandomFromPool(pool, usedList){
+    if(!pool || pool.length === 0) return { item: null, usedList: usedList };
+    let available = pool.filter(item => !usedList.includes(item));
+    let newUsedList = usedList;
+    if(available.length === 0){
+      newUsedList = [];
+      available = pool;
+    }
+    const chosen = available[Math.floor(Math.random() * available.length)];
+    return { item: chosen, usedList: newUsedList.concat([chosen]) };
+  }
+
+  // ===== מנהל: הרצת סיבוב אמת או חובה =====
+  async function launchTodSpin(currentQuestion, room, index){
+    const roomRef = db.collection('rooms').doc(currentRoomCode);
+    const spinResult = Math.random() < 0.5 ? 'truth' : 'dare';
+    const spinDurationMs = 2200 + Math.floor(Math.random() * 1600); // 2.2-3.8 שניות
+    const extraSpins = 3 + Math.floor(Math.random() * 3);
+    const rotation = extraSpins * 360 + (spinResult === 'truth' ? 0 : 180);
+
+    currentQuestion.spinResult = spinResult;
+    currentQuestion.spinDurationMs = spinDurationMs;
+    currentQuestion.rotation = rotation;
+    currentQuestion.revealed = false;
+
+    await roomRef.update({
+      status: 'tod_spin',
+      currentQuestionIndex: index,
+      currentQuestion: currentQuestion
+    });
+
+    goTo('hostTodScreen');
+    document.getElementById('hostTodResult').style.display = 'none';
+    document.getElementById('todNextBtn').style.display = 'none';
+    const bottleEl = document.getElementById('hostBottle');
+    bottleEl.style.transition = 'none';
+    bottleEl.style.transform = 'rotate(0deg)';
+    bottleEl.getBoundingClientRect();
+    bottleEl.style.transition = 'transform ' + (spinDurationMs / 1000) + 's cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+    requestAnimationFrame(() => { bottleEl.style.transform = 'rotate(' + rotation + 'deg)'; });
+    playSound('spin');
+
+    setTimeout(async () => {
+      await revealTodResult(currentQuestion, roomRef);
+    }, spinDurationMs + 200);
+  }
+
+  async function revealTodResult(currentQuestion, roomRef){
+    try{
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const pool = currentQuestion.spinResult === 'truth' ? (room.truthPool || []) : (room.darePool || []);
+      const usedKey = currentQuestion.spinResult === 'truth' ? 'usedTruthPrompts' : 'usedDarePrompts';
+      const usedList = room[usedKey] || [];
+
+      const { item, usedList: newUsedList } = pickRandomFromPool(pool, usedList);
+      const promptText = item || (currentQuestion.spinResult === 'truth' ? 'לא הוכנו שאלות אמת - הוסיפו במאגר!' : 'לא הוכנו משימות חובה - הוסיפו במאגר!');
+
+      currentQuestion.text = promptText;
+      currentQuestion.revealed = true;
+
+      const update = { currentQuestion: currentQuestion };
+      update[usedKey] = newUsedList;
+      await roomRef.update(update);
+
+      playSound('tada');
+      fireConfetti();
+      document.getElementById('hostTodCategory').textContent = currentQuestion.spinResult === 'truth' ? '🟢 אמת' : '🔴 חובה';
+      document.getElementById('hostTodPrompt').textContent = promptText;
+      document.getElementById('hostTodResult').style.display = 'block';
+      document.getElementById('todNextBtn').style.display = 'block';
+    }catch(e){
+      console.error(e);
+    }
   }
 
   function shuffleArray(arr){
@@ -1682,7 +1971,7 @@
       emptyHint.style.display = bank.length === 0 ? 'block' : 'none';
       startBtn.style.display = bank.length === 0 ? 'none' : 'block';
 
-      const typeIcons = { mc: '📝', open: '🎯', cloud: '☁️', reveal: '🎁' };
+      const typeIcons = { mc: '📝', open: '🎯', cloud: '☁️', reveal: '🎁', tod: '🍾' };
 
       bank.forEach((q, idx) => {
         const row = document.createElement('div');
@@ -1709,7 +1998,33 @@
         const mediaIcon = q.mediaUrl ? ' 🖼️' : '';
         const wheelIcon = (q.type === 'open' && q.wheelEnabled) ? ' 🎡' : '';
         const birthdayIcon = (q.type === 'open' && q.target === 'birthday') ? ' 🎂' : '';
-        textDiv.textContent = (idx + 1) + '. ' + icon + ' ' + q.text + mediaIcon + wheelIcon + birthdayIcon;
+
+        const posRow = document.createElement('div');
+        posRow.style.display = 'flex';
+        posRow.style.alignItems = 'center';
+        posRow.style.gap = '8px';
+        posRow.style.marginBottom = '4px';
+
+        const posInput = document.createElement('input');
+        posInput.type = 'number';
+        posInput.value = idx + 1;
+        posInput.min = 1;
+        posInput.max = bank.length;
+        posInput.className = 'position-input';
+        posInput.onchange = () => {
+          const newPos = parseInt(posInput.value);
+          if(newPos) moveQuestionToPosition(idx, newPos);
+        };
+        posRow.appendChild(posInput);
+
+        const label = document.createElement('span');
+        label.style.fontSize = '0.78rem';
+        label.style.color = 'var(--ink-soft)';
+        label.textContent = 'מיקום';
+        posRow.appendChild(label);
+        contentDiv.appendChild(posRow);
+
+        textDiv.textContent = icon + ' ' + (q.type === 'tod' ? 'אמת או חובה' : q.text) + mediaIcon + wheelIcon + birthdayIcon;
         contentDiv.appendChild(textDiv);
 
         const actions = document.createElement('div');
@@ -1843,6 +2158,12 @@
   // ===== מנהל: השקת שאלה (עם גלגל תמיד לשאלה פתוחה) =====
   async function launchQuestion(currentQuestion, room, index){
     const roomRef = db.collection('rooms').doc(currentRoomCode);
+
+    if(currentQuestion.type === 'tod'){
+      await launchTodSpin(currentQuestion, room, index);
+      return;
+    }
+
     const allPlayers = room.players || [];
     const birthdayNames = room.birthdayNames || [];
 
@@ -2221,6 +2542,25 @@
             playSound('tada');
             fireConfetti();
           }, 4200);
+        }
+      } else if(room.status === 'tod_spin' && room.currentQuestion){
+        if(lastSeenWheelId !== room.currentQuestion.id){
+          lastSeenWheelId = room.currentQuestion.id;
+          goTo('playerTodScreen');
+          document.getElementById('playerTodResult').style.display = 'none';
+          const bottleEl = document.getElementById('playerBottle');
+          bottleEl.style.transition = 'none';
+          bottleEl.style.transform = 'rotate(0deg)';
+          bottleEl.getBoundingClientRect();
+          const dur = room.currentQuestion.spinDurationMs || 3000;
+          bottleEl.style.transition = 'transform ' + (dur / 1000) + 's cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+          requestAnimationFrame(() => { bottleEl.style.transform = 'rotate(' + room.currentQuestion.rotation + 'deg)'; });
+          playSound('spin');
+        }
+        if(room.currentQuestion.revealed){
+          document.getElementById('playerTodCategory').textContent = room.currentQuestion.spinResult === 'truth' ? '🟢 אמת' : '🔴 חובה';
+          document.getElementById('playerTodPrompt').textContent = room.currentQuestion.text;
+          document.getElementById('playerTodResult').style.display = 'block';
         }
       } else if(room.status === 'question' && room.currentQuestion){
         const isNewQuestion = lastSeenQuestionId !== room.currentQuestion.id;
