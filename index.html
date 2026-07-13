@@ -1105,27 +1105,74 @@
     return ANIMAL_AVATARS[hash % ANIMAL_AVATARS.length];
   }
 
+  const PLAYER_STALE_MS = 20000; // אם לא נשלחה "פעימת לב" 20 שניות - השחקן נחשב מנותק
+  let latestLobbyRoom = null;
+  let lobbyRefreshTimer = null;
+
   function listenToLobby(){
     if(unsubscribeLobby) unsubscribeLobby();
     unsubscribeLobby = db.collection('rooms').doc(currentRoomCode).onSnapshot((docSnap) => {
       if(!docSnap.exists) return;
-      const room = docSnap.data();
-      const listEl = document.getElementById('playerList');
-      const countEl = document.getElementById('playerCount');
-      const emptyHint = document.getElementById('emptyHint');
-      const birthdayNames = room.birthdayNames || [];
-      listEl.innerHTML = '';
-      countEl.textContent = room.players.length;
-      emptyHint.style.display = room.players.length === 0 ? 'block' : 'none';
-      room.players.forEach(p => {
-        const li = document.createElement('li');
-        const isBirthday = birthdayNames.includes(p.name);
-        li.className = 'player-chip' + (isBirthday ? ' birthday' : '');
-        li.textContent = (isBirthday ? '🎂 ' : '') + (p.avatar || pickAvatarForName(p.name)) + ' ' + p.name;
-        li.onclick = () => toggleBirthday(p.name);
-        listEl.appendChild(li);
-      });
+      latestLobbyRoom = docSnap.data();
+      renderLobbyPlayers();
     });
+    if(lobbyRefreshTimer) clearInterval(lobbyRefreshTimer);
+    lobbyRefreshTimer = setInterval(renderLobbyPlayers, 4000);
+  }
+
+  function renderLobbyPlayers(){
+    if(!latestLobbyRoom) return;
+    const room = latestLobbyRoom;
+    const listEl = document.getElementById('playerList');
+    const countEl = document.getElementById('playerCount');
+    const emptyHint = document.getElementById('emptyHint');
+    const birthdayNames = room.birthdayNames || [];
+    const now = Date.now();
+
+    const activePlayers = (room.players || []).filter(p => {
+      const lastSeen = p.lastSeen || p.joinedAt || 0;
+      return (now - lastSeen) < PLAYER_STALE_MS;
+    });
+
+    listEl.innerHTML = '';
+    countEl.textContent = activePlayers.length;
+    emptyHint.style.display = activePlayers.length === 0 ? 'block' : 'none';
+    activePlayers.forEach(p => {
+      const li = document.createElement('li');
+      const isBirthday = birthdayNames.includes(p.name);
+      li.className = 'player-chip' + (isBirthday ? ' birthday' : '');
+      li.style.display = 'flex';
+      li.style.alignItems = 'center';
+      li.style.gap = '6px';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = (isBirthday ? '🎂 ' : '') + (p.avatar || pickAvatarForName(p.name)) + ' ' + p.name;
+      nameSpan.onclick = () => toggleBirthday(p.name);
+      li.appendChild(nameSpan);
+
+      const removeBtn = document.createElement('span');
+      removeBtn.textContent = '✕';
+      removeBtn.style.opacity = '0.6';
+      removeBtn.style.cursor = 'pointer';
+      removeBtn.onclick = (e) => { e.stopPropagation(); removePlayerFromRoom(p.name); };
+      li.appendChild(removeBtn);
+
+      listEl.appendChild(li);
+    });
+  }
+
+  // ===== מנהל: הסרת שחקן ידנית (למשל שחקן בדיקה) =====
+  async function removePlayerFromRoom(name){
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const players = (room.players || []).filter(p => p.name !== name);
+      const birthdayNames = (room.birthdayNames || []).filter(n => n !== name);
+      await roomRef.update({ players: players, birthdayNames: birthdayNames });
+    }catch(e){
+      console.error(e);
+    }
   }
 
   // ===== מנהל: סימון/ביטול חוגגת (אפשר יותר מאחת) =====
@@ -1143,6 +1190,33 @@
       await roomRef.update({ birthdayNames: birthdayNames });
     }catch(e){
       console.error(e);
+    }
+  }
+
+  // ===== שחקן: פעימת לב - מדווח שהוא עדיין בחיים כדי שלא ייעלם מהרשימה =====
+  let heartbeatTimer = null;
+
+  function startHeartbeat(){
+    if(heartbeatTimer) clearInterval(heartbeatTimer);
+    heartbeatTimer = setInterval(sendHeartbeat, 7000);
+    document.addEventListener('visibilitychange', () => {
+      if(document.visibilityState === 'visible') sendHeartbeat();
+    });
+  }
+
+  async function sendHeartbeat(){
+    if(!currentRoomCode || !currentPlayerName) return;
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      if(!docSnap.exists) return;
+      const room = docSnap.data();
+      const players = (room.players || []).map(p =>
+        p.name === currentPlayerName ? { ...p, lastSeen: Date.now() } : p
+      );
+      await roomRef.update({ players: players });
+    }catch(e){
+      // שגיאת רשת זמנית - לא נורא, ננסה שוב בפעימה הבאה
     }
   }
 
@@ -1172,7 +1246,7 @@
       const pool = availableAvatars.length > 0 ? availableAvatars : ANIMAL_AVATARS;
       const avatar = pool[Math.floor(Math.random() * pool.length)];
 
-      room.players.push({ name: name, score: 0, avatar: avatar, joinedAt: Date.now() });
+      room.players.push({ name: name, score: 0, avatar: avatar, joinedAt: Date.now(), lastSeen: Date.now() });
       await roomRef.set(room);
 
       currentRoomCode = code;
@@ -1180,6 +1254,7 @@
       document.getElementById('welcomePlayerName').textContent = avatar + ' היי ' + name + '!';
       goTo('playerWaiting');
       listenAsPlayer();
+      startHeartbeat();
     }catch(e){
       errEl.textContent = 'שגיאה: ' + (e && e.message ? e.message : e);
       console.error(e);
