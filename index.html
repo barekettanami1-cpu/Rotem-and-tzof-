@@ -476,6 +476,15 @@
     font-weight:800;
     font-size:1.05rem;
     color: var(--red);
+    padding: 4px 14px;
+    border-radius: 999px;
+    transition: all 0.3s ease;
+  }
+  .bottle-label.landed{
+    background: var(--gold);
+    color: var(--ink);
+    transform: translateX(-50%) scale(1.25);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   }
   .bottle-label-top{ top:12px; }
   .bottle-label-bottom{ bottom:12px; }
@@ -814,6 +823,18 @@
         <div class="bottle-label bottle-label-bottom">חובה</div>
         <div class="bottle-shape" id="hostBottle">🍾</div>
       </div>
+      <div id="hostTodCategoryLine" style="display:none; margin-top:10px;" class="wheel-winner-name"></div>
+
+      <div id="hostTodWheelStage" class="wheel-stage" style="display:none; margin-top:14px;">
+        <div class="wheel-pointer"></div>
+        <div class="wheel-outer">
+          <div class="wheel-disc" id="hostTodWheelDisc"></div>
+          <div class="wheel-hub"></div>
+        </div>
+        <div class="wheel-caption">מי יענה/תענה?</div>
+        <div class="wheel-winner-name" id="hostTodWheelWinnerName"></div>
+      </div>
+
       <div id="hostTodResult" style="display:none; margin-top:18px;">
         <div class="points-pill" id="hostTodCategory"></div>
         <div class="reveal-text" id="hostTodPrompt" style="margin-top:10px;"></div>
@@ -831,6 +852,18 @@
         <div class="bottle-label bottle-label-bottom">חובה</div>
         <div class="bottle-shape" id="playerBottle">🍾</div>
       </div>
+      <div id="playerTodCategoryLine" style="display:none; margin-top:10px;" class="wheel-winner-name"></div>
+
+      <div id="playerTodWheelStage" class="wheel-stage" style="display:none; margin-top:14px;">
+        <div class="wheel-pointer"></div>
+        <div class="wheel-outer">
+          <div class="wheel-disc" id="playerTodWheelDisc"></div>
+          <div class="wheel-hub"></div>
+        </div>
+        <div class="wheel-caption">מי יענה/תענה?</div>
+        <div class="wheel-winner-name" id="playerTodWheelWinnerName"></div>
+      </div>
+
       <div id="playerTodResult" style="display:none; margin-top:18px;">
         <div class="points-pill" id="playerTodCategory"></div>
         <div class="reveal-text" id="playerTodPrompt" style="margin-top:10px;"></div>
@@ -887,7 +920,7 @@
         <img id="imagePreview" style="max-width:160px; max-height:160px; border-radius:12px;">
         <div><button type="button" class="icon-btn danger" onclick="clearUploadedImage()" style="margin-top:6px;">🗑️ הסירו תמונה</button></div>
       </div>
-      <input type="text" class="media-input" id="mediaUrlInput" placeholder="או קישור ליוטיוב / הקלטה קולית (רשות)">
+      <input type="text" class="media-input" id="mediaUrlInput" placeholder="או קישור ליוטיוב / גוגל דרייב / הקלטה קולית (רשות)">
       <div class="points-row" id="pointsRow">
         <label for="pointsInput">ניקוד לשאלה:</label>
         <input type="number" class="points-input" id="pointsInput" value="100" min="10" step="10">
@@ -897,7 +930,7 @@
         <input type="number" class="points-input" id="timeLimitInput" value="10" min="0" step="5">
       </div>
       <div id="wheelTargetRow" style="display:none; margin-bottom:14px;">
-        <div class="points-row">
+        <div class="points-row" id="wheelEnabledWrap">
           <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
             <input type="checkbox" id="wheelEnabledInput" checked style="width:18px; height:18px;">
             הפעילו גלגל מזל לפני השאלה
@@ -1287,6 +1320,15 @@
       return (now - lastSeen) < PLAYER_STALE_MS;
     });
 
+    // אם יש שחקנים לא פעילים - מוחקים אותם ממש מהמאגר, לא רק מסתירים
+    const stalePlayers = (room.players || []).filter(p => {
+      const lastSeen = p.lastSeen || p.joinedAt || 0;
+      return (now - lastSeen) >= PLAYER_STALE_MS;
+    });
+    if(stalePlayers.length > 0){
+      purgeStalePlayers(activePlayers, room.birthdayNames || []);
+    }
+
     listEl.innerHTML = '';
     countEl.textContent = activePlayers.length;
     emptyHint.style.display = activePlayers.length === 0 ? 'block' : 'none';
@@ -1315,6 +1357,22 @@
   }
 
   // ===== מנהל: הסרת שחקן ידנית (למשל שחקן בדיקה) =====
+  // ===== מנהל: ניקוי אוטומטי של שחקנים לא פעילים מהמאגר =====
+  let purgeInProgress = false;
+  async function purgeStalePlayers(activePlayers, birthdayNames){
+    if(purgeInProgress) return;
+    purgeInProgress = true;
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const activeNames = activePlayers.map(p => p.name);
+      const cleanedBirthdayNames = birthdayNames.filter(n => activeNames.includes(n));
+      await roomRef.update({ players: activePlayers, birthdayNames: cleanedBirthdayNames });
+    }catch(e){
+      console.error(e);
+    }
+    purgeInProgress = false;
+  }
+
   async function removePlayerFromRoom(name){
     try{
       const roomRef = db.collection('rooms').doc(currentRoomCode);
@@ -1445,6 +1503,7 @@
   let hasAnsweredCurrent = false;
   let lastSeenQuestionId = null;
   let lastSeenWheelId = null;
+  let lastSeenTodWheelId = null;
   let unsubscribePlayer = null;
   let unsubscribeHostQuestion = null;
 
@@ -1485,7 +1544,7 @@
     document.getElementById('imagePreviewWrap').style.display = 'none';
     document.getElementById('imagePreview').src = '';
     document.getElementById('mediaUrlInput').disabled = false;
-    document.getElementById('mediaUrlInput').placeholder = 'או קישור ליוטיוב / הקלטה קולית (רשות)';
+    document.getElementById('mediaUrlInput').placeholder = 'או קישור ליוטיוב / גוגל דרייב / הקלטה קולית (רשות)';
   }
 
   function setQuestionType(type){
@@ -1498,7 +1557,8 @@
 
     document.getElementById('optionsContainer').style.display = type === 'mc' ? 'block' : 'none';
     document.getElementById('revealTextInput').style.display = type === 'reveal' ? 'block' : 'none';
-    document.getElementById('wheelTargetRow').style.display = type === 'open' ? 'block' : 'none';
+    document.getElementById('wheelTargetRow').style.display = (type === 'open' || type === 'tod') ? 'block' : 'none';
+    document.getElementById('wheelEnabledWrap').style.display = type === 'open' ? 'flex' : 'none';
     document.getElementById('pointsRow').style.display = (type === 'mc' || type === 'open') ? 'flex' : 'none';
     document.getElementById('timeLimitRow').style.display = type === 'mc' ? 'flex' : 'none';
 
@@ -1717,9 +1777,10 @@
       mediaUrl: mediaUrl,
       revealText: revealText,
       wheelEnabled: selectedQuestionType === 'open' ? document.getElementById('wheelEnabledInput').checked : false,
-      target: selectedQuestionType === 'open' ? document.getElementById('targetSelect').value : 'all',
+      target: (selectedQuestionType === 'open' || selectedQuestionType === 'tod') ? document.getElementById('targetSelect').value : 'all',
       options: options,
-      correctIndex: selectedQuestionType === 'mc' ? selectedCorrectIndex : null
+      correctIndex: selectedQuestionType === 'mc' ? selectedCorrectIndex : null,
+      edited: true
     };
 
     try{
@@ -1794,10 +1855,16 @@
     return { item: chosen, usedList: newUsedList.concat([chosen]) };
   }
 
-  // ===== מנהל: הרצת סיבוב אמת או חובה =====
+  // בוחר קטגוריה כך שלא תחזור על הקודמת ברצף
+  function pickTodCategory(lastCategory){
+    if(!lastCategory) return Math.random() < 0.5 ? 'truth' : 'dare';
+    return lastCategory === 'truth' ? 'dare' : 'truth';
+  }
+
+  // ===== מנהל: הרצת סיבוב אמת או חובה (בקבוק + גלגל שמות + חשיפה) =====
   async function launchTodSpin(currentQuestion, room, index){
     const roomRef = db.collection('rooms').doc(currentRoomCode);
-    const spinResult = Math.random() < 0.5 ? 'truth' : 'dare';
+    const spinResult = pickTodCategory(room.lastTodCategory);
     const spinDurationMs = 2200 + Math.floor(Math.random() * 1600); // 2.2-3.8 שניות
     const extraSpins = 3 + Math.floor(Math.random() * 3);
     const rotation = extraSpins * 360 + (spinResult === 'truth' ? 0 : 180);
@@ -1806,16 +1873,24 @@
     currentQuestion.spinDurationMs = spinDurationMs;
     currentQuestion.rotation = rotation;
     currentQuestion.revealed = false;
+    currentQuestion.wheelWinner = null;
+    currentQuestion.wheelRotation = null;
 
     await roomRef.update({
       status: 'tod_spin',
       currentQuestionIndex: index,
-      currentQuestion: currentQuestion
+      currentQuestion: currentQuestion,
+      lastTodCategory: spinResult
     });
 
     goTo('hostTodScreen');
+    document.getElementById('hostTodCategoryLine').style.display = 'none';
+    document.getElementById('hostTodWheelStage').style.display = 'none';
     document.getElementById('hostTodResult').style.display = 'none';
     document.getElementById('todNextBtn').style.display = 'none';
+    document.querySelector('#hostTodScreen .bottle-label-top').classList.remove('landed');
+    document.querySelector('#hostTodScreen .bottle-label-bottom').classList.remove('landed');
+
     const bottleEl = document.getElementById('hostBottle');
     bottleEl.style.transition = 'none';
     bottleEl.style.transform = 'rotate(0deg)';
@@ -1825,11 +1900,59 @@
     playSound('spin');
 
     setTimeout(async () => {
-      await revealTodResult(currentQuestion, roomRef);
-    }, spinDurationMs + 200);
+      await proceedAfterBottle(currentQuestion, room, roomRef);
+    }, spinDurationMs + 300);
   }
 
-  async function revealTodResult(currentQuestion, roomRef){
+  // שלב 2: אחרי שהבקבוק נוחת - מציגים קטגוריה ומריצים גלגל שמות
+  async function proceedAfterBottle(currentQuestion, room, roomRef){
+    document.getElementById('hostTodCategoryLine').textContent = currentQuestion.spinResult === 'truth' ? '🟢 נחת על אמת!' : '🔴 נחת על חובה!';
+    document.getElementById('hostTodCategoryLine').style.display = 'block';
+    document.querySelector('#hostTodScreen .bottle-label-' + (currentQuestion.spinResult === 'truth' ? 'top' : 'bottom')).classList.add('landed');
+    playSound('tada');
+
+    const allPlayers = room.players || [];
+    const birthdayNames = room.birthdayNames || [];
+    let pool = allPlayers;
+    if(currentQuestion.target === 'birthday'){
+      const filtered = allPlayers.filter(p => birthdayNames.includes(p.name));
+      pool = filtered.length > 0 ? filtered : allPlayers;
+    } else {
+      const filtered = allPlayers.filter(p => !birthdayNames.includes(p.name));
+      pool = filtered.length > 0 ? filtered : allPlayers;
+    }
+
+    if(pool.length === 0){
+      await revealTodPrompt(currentQuestion, roomRef);
+      return;
+    }
+
+    const { winnerIndex, rotation } = pickWheelWinnerAndRotation(pool);
+    currentQuestion.wheelWinner = pool[winnerIndex].name;
+    currentQuestion.wheelWinnerAvatar = pool[winnerIndex].avatar || pickAvatarForName(pool[winnerIndex].name);
+    currentQuestion.wheelRotation = rotation;
+    currentQuestion.wheelPlayersSnapshot = pool.map(p => ({ name: p.name, avatar: p.avatar || pickAvatarForName(p.name) }));
+    await roomRef.update({ currentQuestion: currentQuestion });
+
+    setTimeout(() => {
+      const discEl = document.getElementById('hostTodWheelDisc');
+      renderWheelDisc(discEl, pool);
+      document.getElementById('hostTodWheelWinnerName').textContent = '';
+      document.getElementById('hostTodWheelStage').style.display = 'flex';
+      spinWheelDisc(discEl, rotation);
+      playSound('spin');
+
+      setTimeout(async () => {
+        document.getElementById('hostTodWheelWinnerName').textContent = currentQuestion.wheelWinnerAvatar + ' ' + currentQuestion.wheelWinner + ' 🎉';
+        playSound('tada');
+        fireConfetti();
+        setTimeout(async () => { await revealTodPrompt(currentQuestion, roomRef); }, 1200);
+      }, 4200);
+    }, 900);
+  }
+
+  // שלב 3: חשיפת השאלה/משימה הסופית מהמאגר המתאים
+  async function revealTodPrompt(currentQuestion, roomRef){
     try{
       const docSnap = await roomRef.get();
       const room = docSnap.data();
@@ -1906,7 +2029,8 @@
       mediaUrl: '',
       revealText: '',
       options: [],
-      correctIndex: null
+      correctIndex: null,
+      edited: false
     }));
     return { results: results, warnings: [] };
   }
@@ -2054,10 +2178,11 @@
 
         const textDiv = document.createElement('div');
         textDiv.className = 'bank-row-text';
+        const typeLabels = { mc: 'עם אפשרויות', open: 'פתוחה', cloud: 'ענן מילים', reveal: 'חשיפת מידע', tod: 'אמת או חובה' };
         const icon = typeIcons[q.type] || '📝';
         const mediaIcon = q.mediaUrl ? ' 🖼️' : '';
         const wheelIcon = (q.type === 'open' && q.wheelEnabled) ? ' 🎡' : '';
-        const birthdayIcon = (q.type === 'open' && q.target === 'birthday') ? ' 🎂' : '';
+        const birthdayIcon = (q.type === 'open' || q.type === 'tod') && q.target === 'birthday' ? ' 🎂' : '';
 
         const posRow = document.createElement('div');
         posRow.style.display = 'flex';
@@ -2082,9 +2207,26 @@
         label.style.color = 'var(--ink-soft)';
         label.textContent = 'מיקום';
         posRow.appendChild(label);
+
+        const editedBadge = document.createElement('span');
+        editedBadge.style.fontSize = '0.75rem';
+        editedBadge.style.fontWeight = '700';
+        editedBadge.style.marginRight = 'auto';
+        editedBadge.style.color = q.edited ? '#2F8F53' : '#C97A2B';
+        editedBadge.textContent = q.edited ? '✅ ערוך' : '⚠️ טרם נערך';
+        posRow.appendChild(editedBadge);
+
         contentDiv.appendChild(posRow);
 
-        textDiv.textContent = icon + ' ' + (q.type === 'tod' ? 'אמת או חובה' : q.text) + mediaIcon + wheelIcon + birthdayIcon;
+        const typeBadge = document.createElement('div');
+        typeBadge.style.fontSize = '0.75rem';
+        typeBadge.style.fontWeight = '700';
+        typeBadge.style.color = 'var(--ink-soft)';
+        typeBadge.style.marginBottom = '2px';
+        typeBadge.textContent = icon + ' סוג: ' + (typeLabels[q.type] || q.type);
+        contentDiv.appendChild(typeBadge);
+
+        textDiv.textContent = (q.type === 'tod' ? 'אמת או חובה' : q.text) + mediaIcon + wheelIcon + birthdayIcon;
         contentDiv.appendChild(textDiv);
 
         const actions = document.createElement('div');
@@ -2147,10 +2289,20 @@
     const ytMatch = finalUrl.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/shorts\/)([A-Za-z0-9_-]{6,})/);
     if(ytMatch) ytId = ytMatch[1];
 
+    let driveId = null;
+    const driveMatch = finalUrl.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
+    if(driveMatch) driveId = driveMatch[1];
+
     if(ytId){
       const iframe = document.createElement('iframe');
       iframe.src = 'https://www.youtube.com/embed/' + ytId;
       iframe.allow = 'autoplay; encrypted-media';
+      iframe.allowFullscreen = true;
+      wrap.appendChild(iframe);
+    } else if(driveId){
+      const iframe = document.createElement('iframe');
+      iframe.src = 'https://drive.google.com/file/d/' + driveId + '/preview';
+      iframe.allow = 'autoplay';
       iframe.allowFullscreen = true;
       wrap.appendChild(iframe);
     } else if(/\.(mp3|wav|m4a|ogg)(\?.*)?$/i.test(finalUrl)){
@@ -2485,12 +2637,16 @@
   }
 
   // ===== ענן מילים =====
-  const CLOUD_COLORS = ['#C98FCB', '#E85D8F', '#F0A8C0', '#B584C4', '#D6336C', '#7A4FA3', '#EC7FA9', '#9C4F9C'];
+  const cloudWordColorMap = {};
+  let cloudColorCounter = 0;
 
   function colorForWord(word){
-    let hash = 0;
-    for(let i = 0; i < word.length; i++){ hash = (hash * 31 + word.charCodeAt(i)) >>> 0; }
-    return CLOUD_COLORS[hash % CLOUD_COLORS.length];
+    if(!cloudWordColorMap[word]){
+      const hue = (cloudColorCounter * 137.508) % 360; // זווית הזהב - מפזר גוונים באופן שווה ותמיד שונה
+      cloudWordColorMap[word] = 'hsl(' + Math.round(hue) + ', 62%, 45%)';
+      cloudColorCounter++;
+    }
+    return cloudWordColorMap[word];
   }
 
   function renderCloudInto(containerEl, words){
@@ -2671,8 +2827,14 @@
       } else if(room.status === 'tod_spin' && room.currentQuestion){
         if(lastSeenWheelId !== room.currentQuestion.id){
           lastSeenWheelId = room.currentQuestion.id;
+          lastSeenTodWheelId = null;
           goTo('playerTodScreen');
+          document.getElementById('playerTodCategoryLine').style.display = 'none';
+          document.getElementById('playerTodWheelStage').style.display = 'none';
           document.getElementById('playerTodResult').style.display = 'none';
+          document.querySelector('#playerTodScreen .bottle-label-top').classList.remove('landed');
+          document.querySelector('#playerTodScreen .bottle-label-bottom').classList.remove('landed');
+
           const bottleEl = document.getElementById('playerBottle');
           bottleEl.style.transition = 'none';
           bottleEl.style.transform = 'rotate(0deg)';
@@ -2681,7 +2843,33 @@
           bottleEl.style.transition = 'transform ' + (dur / 1000) + 's cubic-bezier(0.17, 0.67, 0.12, 0.99)';
           requestAnimationFrame(() => { bottleEl.style.transform = 'rotate(' + room.currentQuestion.rotation + 'deg)'; });
           playSound('spin');
+
+          setTimeout(() => {
+            document.getElementById('playerTodCategoryLine').textContent = room.currentQuestion.spinResult === 'truth' ? '🟢 נחת על אמת!' : '🔴 נחת על חובה!';
+            document.getElementById('playerTodCategoryLine').style.display = 'block';
+            document.querySelector('#playerTodScreen .bottle-label-' + (room.currentQuestion.spinResult === 'truth' ? 'top' : 'bottom')).classList.add('landed');
+            playSound('tada');
+          }, dur + 300);
         }
+
+        if(room.currentQuestion.wheelWinner && lastSeenTodWheelId !== room.currentQuestion.id){
+          lastSeenTodWheelId = room.currentQuestion.id;
+          const players = room.currentQuestion.wheelPlayersSnapshot || [];
+          setTimeout(() => {
+            const discEl = document.getElementById('playerTodWheelDisc');
+            renderWheelDisc(discEl, players);
+            document.getElementById('playerTodWheelWinnerName').textContent = '';
+            document.getElementById('playerTodWheelStage').style.display = 'flex';
+            spinWheelDisc(discEl, room.currentQuestion.wheelRotation);
+            playSound('spin');
+            setTimeout(() => {
+              document.getElementById('playerTodWheelWinnerName').textContent = (room.currentQuestion.wheelWinnerAvatar || '') + ' ' + room.currentQuestion.wheelWinner + ' 🎉';
+              playSound('tada');
+              fireConfetti();
+            }, 4200);
+          }, 900);
+        }
+
         if(room.currentQuestion.revealed){
           document.getElementById('playerTodCategory').textContent = room.currentQuestion.spinResult === 'truth' ? '🟢 אמת' : '🔴 חובה';
           document.getElementById('playerTodPrompt').textContent = room.currentQuestion.text;
