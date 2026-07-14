@@ -737,6 +737,11 @@
       <input type="text" id="hostNameInput" placeholder="השם שלך (לדוגמה: דנה)">
       <div class="error" id="hostCreateError"></div>
       <button class="btn btn-primary" onclick="createRoom()">צור/י חדר</button>
+      <hr style="margin:20px 0; border:none; border-top:1px solid #E3D9C5;">
+      <p style="font-size:0.85rem; color:var(--ink-soft); margin-bottom:8px;">כבר יש לכם חדר? נהלו אותו מכל מכשיר לפי הקוד:</p>
+      <input type="text" id="rejoinCodeInput" class="code-input" maxlength="4" placeholder="קוד" oninput="this.value=this.value.toUpperCase()">
+      <div class="error" id="rejoinError"></div>
+      <button class="btn btn-secondary" onclick="manageExistingRoom()">נהלו את החדר הזה</button>
     </div>
     <div style="text-align:center;"><span class="back-link" onclick="goTo('landing')">חזרה</span></div>
   </div>
@@ -887,6 +892,10 @@
         <label for="pointsInput">ניקוד לשאלה:</label>
         <input type="number" class="points-input" id="pointsInput" value="100" min="10" step="10">
       </div>
+      <div class="points-row" id="timeLimitRow" style="display:none;">
+        <label for="timeLimitInput">זמן מענה (שניות, 0 = בלי הגבלה):</label>
+        <input type="number" class="points-input" id="timeLimitInput" value="10" min="0" step="5">
+      </div>
       <div id="wheelTargetRow" style="display:none; margin-bottom:14px;">
         <div class="points-row">
           <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
@@ -897,7 +906,7 @@
         <div class="points-row">
           <label for="targetSelect">מי יכול/ה להיבחר:</label>
           <select id="targetSelect" style="padding:8px 10px; border-radius:10px; border:2px solid #E3D9C5;">
-            <option value="all">כל המשתתפים</option>
+            <option value="all">כל המשתתפים (חוץ מהחוגגות)</option>
             <option value="birthday">החוגגות בלבד</option>
           </select>
         </div>
@@ -966,6 +975,7 @@
       <div class="live-question-text" id="liveQuestionText"></div>
       <div class="points-pill" id="livePointsPill"></div>
       <div class="progress-line" id="answeredProgress"></div>
+      <div class="points-pill" id="hostCountdown" style="display:none; background:var(--red); color:#fff;"></div>
       <div id="mcHostArea"></div>
       <div id="openHostArea"></div>
       <div id="cloudHostArea" class="cloud-box" style="display:none;"></div>
@@ -995,6 +1005,7 @@
       <div id="pqMediaContainer"></div>
       <div class="live-question-text" id="pqText"></div>
       <div class="points-pill" id="pqPoints"></div>
+      <div class="points-pill" id="pqCountdown" style="display:none; background:var(--red); color:#fff;"></div>
       <div id="pqMcArea"></div>
       <div id="pqOpenArea" style="text-align:center; color:var(--ink-soft); padding:20px 0;"></div>
       <div id="pqCloudArea" style="display:none;">
@@ -1216,6 +1227,29 @@
     }
   }
 
+  // ===== מנהל: ניהול חדר קיים לפי קוד, מכל מכשיר =====
+  async function manageExistingRoom(){
+    const code = document.getElementById('rejoinCodeInput').value.trim().toUpperCase();
+    const errEl = document.getElementById('rejoinError');
+    errEl.textContent = '';
+
+    if(!code || code.length !== 4){ errEl.textContent = 'נא להזין קוד בן 4 תווים'; return; }
+
+    try{
+      const docSnap = await db.collection('rooms').doc(code).get();
+      if(!docSnap.exists){ errEl.textContent = 'לא נמצא חדר עם הקוד הזה'; return; }
+
+      currentRoomCode = code;
+      localStorage.setItem('lastHostRoomCode', code);
+      document.getElementById('roomCodeDisplay').textContent = code;
+      goTo('hostLobby');
+      listenToLobby();
+    }catch(e){
+      errEl.textContent = 'שגיאה: ' + (e && e.message ? e.message : e);
+      console.error(e);
+    }
+  }
+
   const ANIMAL_AVATARS = ['🦉','🐶','🐱','🐬','🐦','🐟','🦊','🐼','🐨','🦁','🐸','🐢','🦋','🐧','🦄','🐰','🐙','🦔'];
 
   function pickAvatarForName(name){
@@ -1314,6 +1348,28 @@
 
   // ===== שחקן: פעימת לב - מדווח שהוא עדיין בחיים כדי שלא ייעלם מהרשימה =====
   let heartbeatTimer = null;
+  let playerCountdownTimer = null;
+
+  function startPlayerCountdown(q){
+    if(playerCountdownTimer) clearInterval(playerCountdownTimer);
+    const countdownEl = document.getElementById('pqCountdown');
+
+    if(!q.timeLimit || q.timeLimit <= 0){
+      countdownEl.style.display = 'none';
+      return;
+    }
+
+    countdownEl.style.display = 'inline-block';
+    playerCountdownTimer = setInterval(() => {
+      const elapsed = (Date.now() - q.startedAt) / 1000;
+      const remaining = Math.max(0, Math.ceil(q.timeLimit - elapsed));
+      countdownEl.textContent = '⏱ ' + remaining + ' שניות';
+      if(remaining <= 0){
+        clearInterval(playerCountdownTimer);
+        playerCountdownTimer = null;
+      }
+    }, 500);
+  }
 
   function startHeartbeat(){
     if(heartbeatTimer) clearInterval(heartbeatTimer);
@@ -1444,6 +1500,7 @@
     document.getElementById('revealTextInput').style.display = type === 'reveal' ? 'block' : 'none';
     document.getElementById('wheelTargetRow').style.display = type === 'open' ? 'block' : 'none';
     document.getElementById('pointsRow').style.display = (type === 'mc' || type === 'open') ? 'flex' : 'none';
+    document.getElementById('timeLimitRow').style.display = type === 'mc' ? 'flex' : 'none';
 
     const hideForTod = type === 'tod';
     document.getElementById('questionTextInput').style.display = hideForTod ? 'none' : 'block';
@@ -1473,6 +1530,7 @@
     document.getElementById('revealTextInput').value = '';
     document.getElementById('wheelEnabledInput').checked = true;
     document.getElementById('targetSelect').value = 'all';
+    document.getElementById('timeLimitInput').value = 10;
     document.querySelectorAll('#optionsContainer input[type=text]').forEach(i => i.value = '');
     selectedCorrectIndex = null;
     document.querySelectorAll('.correct-check').forEach(b => b.classList.remove('selected'));
@@ -1495,6 +1553,7 @@
       document.getElementById('questionTextInput').value = q.text || '';
       document.getElementById('revealTextInput').value = q.revealText || '';
       document.getElementById('pointsInput').value = q.points || 100;
+      document.getElementById('timeLimitInput').value = (q.timeLimit === 0 || q.timeLimit) ? q.timeLimit : 10;
       document.getElementById('wheelEnabledInput').checked = q.wheelEnabled !== false;
       document.getElementById('targetSelect').value = q.target || 'all';
 
@@ -1654,6 +1713,7 @@
       type: selectedQuestionType,
       text: text,
       points: points,
+      timeLimit: selectedQuestionType === 'mc' ? (parseInt(document.getElementById('timeLimitInput').value) || 0) : 0,
       mediaUrl: mediaUrl,
       revealText: revealText,
       wheelEnabled: selectedQuestionType === 'open' ? document.getElementById('wheelEnabledInput').checked : false,
@@ -2058,6 +2118,8 @@
       type: bankQuestion.type,
       text: bankQuestion.text,
       points: bankQuestion.points,
+      timeLimit: bankQuestion.timeLimit || 0,
+      startedAt: null,
       mediaUrl: bankQuestion.mediaUrl || '',
       revealText: bankQuestion.revealText || '',
       wheelEnabled: bankQuestion.wheelEnabled || false,
@@ -2168,11 +2230,17 @@
     const birthdayNames = room.birthdayNames || [];
 
     let pool = allPlayers;
-    if(currentQuestion.type === 'open' && currentQuestion.target === 'birthday'){
-      const filtered = allPlayers.filter(p => birthdayNames.includes(p.name));
-      pool = filtered.length > 0 ? filtered : allPlayers;
+    if(currentQuestion.type === 'open'){
+      if(currentQuestion.target === 'birthday'){
+        const filtered = allPlayers.filter(p => birthdayNames.includes(p.name));
+        pool = filtered.length > 0 ? filtered : allPlayers;
+      } else {
+        const filtered = allPlayers.filter(p => !birthdayNames.includes(p.name));
+        pool = filtered.length > 0 ? filtered : allPlayers;
+      }
     }
     currentQuestion.eligiblePlayerNames = pool.map(p => p.name);
+    currentQuestion.startedAt = Date.now();
 
     const usesWheel = currentQuestion.type === 'open' && currentQuestion.wheelEnabled && pool.length > 0;
 
@@ -2233,6 +2301,46 @@
     }
     goTo('hostQuestionLive');
     listenAsHostQuestion();
+    startHostCountdown(currentQuestion);
+  }
+
+  // ===== מנהל: טיימר לשאלות עם אפשרויות =====
+  let hostCountdownTimer = null;
+
+  function startHostCountdown(q){
+    if(hostCountdownTimer) clearInterval(hostCountdownTimer);
+    const countdownEl = document.getElementById('hostCountdown');
+
+    if(q.type !== 'mc' || !q.timeLimit || q.timeLimit <= 0){
+      countdownEl.style.display = 'none';
+      return;
+    }
+
+    countdownEl.style.display = 'inline-block';
+    hostCountdownTimer = setInterval(() => {
+      const elapsed = (Date.now() - q.startedAt) / 1000;
+      const remaining = Math.max(0, Math.ceil(q.timeLimit - elapsed));
+      countdownEl.textContent = '⏱ ' + remaining + ' שניות';
+      if(remaining <= 0){
+        clearInterval(hostCountdownTimer);
+        hostCountdownTimer = null;
+        autoRevealIfNeeded();
+      }
+    }, 500);
+  }
+
+  // מפעיל חשיפה אוטומטית אם הזמן נגמר או שכולם ענו (רק לשאלות עם אפשרויות)
+  async function autoRevealIfNeeded(){
+    try{
+      const roomRef = db.collection('rooms').doc(currentRoomCode);
+      const docSnap = await roomRef.get();
+      const room = docSnap.data();
+      const cq = room.currentQuestion;
+      if(!cq || cq.type !== 'mc' || cq.revealed) return;
+      await revealResults();
+    }catch(e){
+      console.error(e);
+    }
   }
 
   // ===== מנהל: התחלת החידון מהרשימה =====
@@ -2304,6 +2412,12 @@
       const room = docSnap.data();
       if(!room.currentQuestion) return;
       renderHostLiveQuestion(room.currentQuestion, room.players || []);
+
+      const cq = room.currentQuestion;
+      const players = room.players || [];
+      if(cq.type === 'mc' && !cq.revealed && players.length > 0 && cq.answers.length >= players.length){
+        autoRevealIfNeeded();
+      }
     });
   }
 
@@ -2489,12 +2603,22 @@
   }
 
   // מנהל מנקד שאלה עם אפשרויות
+  let revealInProgress = false;
+
   async function revealResults(){
+    if(revealInProgress) return;
+    revealInProgress = true;
+    if(hostCountdownTimer){ clearInterval(hostCountdownTimer); hostCountdownTimer = null; }
+    document.getElementById('hostCountdown').style.display = 'none';
+
     try{
       const roomRef = db.collection('rooms').doc(currentRoomCode);
       const docSnap = await roomRef.get();
       const room = docSnap.data();
       const cq = room.currentQuestion;
+
+      if(cq.revealed){ revealInProgress = false; return; }
+
       let updatedPlayers = room.players;
 
       if(cq.type === 'mc'){
@@ -2518,6 +2642,7 @@
     }catch(e){
       console.error(e);
     }
+    revealInProgress = false;
   }
 
   // ===== שחקן: מאזין למצב החדר =====
@@ -2631,13 +2756,19 @@
         btn.onclick = () => submitAnswer(idx, btn);
         mcArea.appendChild(btn);
       });
-    } else if(q.type === 'cloud'){
+      startPlayerCountdown(q);
+    } else {
+      document.getElementById('pqCountdown').style.display = 'none';
+      if(playerCountdownTimer){ clearInterval(playerCountdownTimer); playerCountdownTimer = null; }
+    }
+
+    if(q.type === 'cloud'){
       cloudArea.style.display = 'block';
     } else if(q.type === 'reveal'){
       revealArea.style.display = 'block';
       document.getElementById('pqRevealBox').classList.remove('shown');
       document.getElementById('pqRevealWaiting').style.display = 'block';
-    } else {
+    } else if(q.type !== 'mc'){
       openArea.style.display = 'block';
       if(q.wheelWinner === currentPlayerName){
         openArea.innerHTML = '🎯 <strong>הגלגל בחר בכם!</strong><br>ענו בקול רם עכשיו';
