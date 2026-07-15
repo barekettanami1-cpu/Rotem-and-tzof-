@@ -638,6 +638,15 @@
     color:#3a1030;
     text-shadow: 0 1px 0 rgba(255,255,255,0.4);
   }
+  .wheel-title{
+    text-align:center;
+    font-family:'Rubik', sans-serif;
+    font-weight:800;
+    font-size:1.3rem;
+    color: var(--gold-light);
+    text-shadow: 0 0 16px rgba(246,200,96,0.6);
+    margin-bottom: 6px;
+  }
   .wheel-caption{
     text-align:center;
     margin-top: 18px;
@@ -732,10 +741,10 @@
   .bottle-label-bottom{ bottom:10px; }
   .bottle-shape{
     position:relative;
-    width: 24px;
-    height: 64px;
+    width: 18px;
+    height: 46px;
     margin: 0 auto;
-    border-radius: 10px 10px 8px 8px;
+    border-radius: 8px 8px 6px 6px;
     background:
       linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 22%, transparent 40%),
       linear-gradient(160deg, var(--gold-light) 0%, var(--gold) 55%, var(--pink-deep) 100%);
@@ -746,10 +755,10 @@
     /* צוואר הבקבוק - הקצה שמצביע בבירור על אמת/חובה */
     content:"";
     position:absolute;
-    top:-26px; left:50%;
+    top:-19px; left:50%;
     transform:translateX(-50%);
-    width:10px; height:27px;
-    border-radius: 5px 5px 2px 2px;
+    width:8px; height:20px;
+    border-radius: 4px 4px 2px 2px;
     background: linear-gradient(160deg, var(--gold-light), var(--gold) 70%, var(--gold-deep));
     box-shadow: 0 0 10px rgba(246,200,96,0.5);
   }
@@ -757,9 +766,9 @@
     /* פקק */
     content:"";
     position:absolute;
-    top:-31px; left:50%;
+    top:-23px; left:50%;
     transform:translateX(-50%);
-    width:14px; height:8px;
+    width:11px; height:6px;
     border-radius: 3px;
     background: var(--pink);
     box-shadow: 0 0 10px rgba(255,61,148,0.65);
@@ -1291,6 +1300,7 @@
   <div id="hostWheel" class="screen">
     <div class="card">
       <div class="eyebrow">בוחרים מי עונה...</div>
+      <div class="wheel-title">⭐ הגלגל בוחר... ⭐</div>
       <div class="wheel-stage">
         <div class="wheel-pointer"></div>
         <div class="wheel-outer">
@@ -1298,7 +1308,6 @@
           <div class="wheel-hub">★</div>
         </div>
       </div>
-      <div class="wheel-caption">הגלגל בוחר שחקן/ית...</div>
       <div class="wheel-winner-name" id="hostWheelWinnerName" style="text-align:center;"></div>
     </div>
   </div>
@@ -1307,6 +1316,7 @@
   <div id="playerWheel" class="screen">
     <div class="card">
       <div class="eyebrow">בוחרים מי עונה...</div>
+      <div class="wheel-title">⭐ מי יזכה לענות? ⭐</div>
       <div class="wheel-stage">
         <div class="wheel-pointer"></div>
         <div class="wheel-outer">
@@ -1314,7 +1324,6 @@
           <div class="wheel-hub">★</div>
         </div>
       </div>
-      <div class="wheel-caption">מי יזכה לענות?</div>
       <div class="wheel-winner-name" id="playerWheelWinnerName" style="text-align:center;"></div>
     </div>
   </div>
@@ -1830,6 +1839,7 @@
   let lastSeenQuestionId = null;
   let lastSeenWheelId = null;
   let lastSeenTodWheelId = null;
+  let lastSeenInfoRevealId = null;
   let unsubscribePlayer = null;
   let unsubscribeHostQuestion = null;
 
@@ -3337,6 +3347,11 @@
             document.getElementById('pqRevealWaiting').style.display = 'none';
             document.getElementById('pqRevealBoxText').textContent = room.currentQuestion.revealText;
             document.getElementById('pqRevealBox').classList.add('shown');
+            if(lastSeenInfoRevealId !== room.currentQuestion.id){
+              lastSeenInfoRevealId = room.currentQuestion.id;
+              playSound('tada');
+              fireConfetti();
+            }
           }
         } else if(isNewQuestion){
           renderPlayerQuestion(room.currentQuestion);
