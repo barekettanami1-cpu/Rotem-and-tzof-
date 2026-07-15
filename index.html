@@ -611,8 +611,10 @@
   .wheel-label{
     position:absolute;
     top:50%; left:50%;
-    width: 100px;
-    text-align:right;
+    width: 110px;
+    display:flex;
+    align-items:center;
+    gap:5px;
     font-size:0.78rem;
     font-weight:700;
     color:#fff;
@@ -620,7 +622,18 @@
     transform-origin: 0 0;
     white-space:nowrap;
     overflow:hidden;
-    text-overflow:ellipsis;
+  }
+  .wheel-label span{ overflow:hidden; text-overflow:ellipsis; }
+  .avatar-thumb{
+    border-radius:50%;
+    object-fit:cover;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    vertical-align:middle;
+    border:1.5px solid var(--gold-light);
+    background: var(--surface-strong);
+    flex-shrink:0;
   }
   .wheel-hub{
     position:absolute;
@@ -698,8 +711,8 @@
   /* ---- Truth or Dare bottle ---- */
   .bottle-dial{
     position:relative;
-    width:150px;
-    height:150px;
+    width:110px;
+    height:110px;
     margin:10px auto 0;
     border-radius:50%;
     background: radial-gradient(circle, var(--card-1) 0%, var(--card-2) 100%);
@@ -724,9 +737,9 @@
     transform:translateX(-50%);
     font-family:'Rubik', sans-serif;
     font-weight:800;
-    font-size:0.92rem;
+    font-size:0.84rem;
     color: var(--gold-light);
-    padding: 4px 14px;
+    padding: 3px 12px;
     border-radius: 999px;
     transition: all 0.3s ease;
     z-index:5;
@@ -737,41 +750,41 @@
     transform: translateX(-50%) scale(1.25);
     box-shadow: 0 4px 14px rgba(0,0,0,0.4);
   }
-  .bottle-label-top{ top:10px; }
-  .bottle-label-bottom{ bottom:10px; }
+  .bottle-label-top{ top:6px; }
+  .bottle-label-bottom{ bottom:6px; }
   .bottle-shape{
     position:relative;
-    width: 18px;
-    height: 46px;
+    width: 12px;
+    height: 28px;
     margin: 0 auto;
-    border-radius: 8px 8px 6px 6px;
+    border-radius: 6px 6px 4px 4px;
     background:
       linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 22%, transparent 40%),
       linear-gradient(160deg, var(--gold-light) 0%, var(--gold) 55%, var(--pink-deep) 100%);
-    box-shadow: 0 0 16px rgba(246,200,96,0.45), inset 0 0 14px rgba(255,255,255,0.18);
+    box-shadow: 0 0 12px rgba(246,200,96,0.45), inset 0 0 10px rgba(255,255,255,0.18);
     transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
   }
   .bottle-shape::before{
     /* צוואר הבקבוק - הקצה שמצביע בבירור על אמת/חובה */
     content:"";
     position:absolute;
-    top:-19px; left:50%;
+    top:-11px; left:50%;
     transform:translateX(-50%);
-    width:8px; height:20px;
-    border-radius: 4px 4px 2px 2px;
+    width:5px; height:12px;
+    border-radius: 3px 3px 1px 1px;
     background: linear-gradient(160deg, var(--gold-light), var(--gold) 70%, var(--gold-deep));
-    box-shadow: 0 0 10px rgba(246,200,96,0.5);
+    box-shadow: 0 0 8px rgba(246,200,96,0.5);
   }
   .bottle-shape::after{
     /* פקק */
     content:"";
     position:absolute;
-    top:-23px; left:50%;
+    top:-14px; left:50%;
     transform:translateX(-50%);
-    width:11px; height:6px;
-    border-radius: 3px;
+    width:7px; height:4px;
+    border-radius: 2px;
     background: var(--pink);
-    box-shadow: 0 0 10px rgba(255,61,148,0.65);
+    box-shadow: 0 0 8px rgba(255,61,148,0.65);
   }
 
   /* ---- Media in questions ---- */
@@ -1418,6 +1431,26 @@
     <div style="text-align:center;"><span class="back-link" onclick="goTo('landing')">חזרה</span></div>
   </div>
 
+  <div id="playerPhoto" class="screen">
+    <div class="card" style="text-align:center;">
+      <div class="eyebrow">שלב אחרון</div>
+      <h2>הוסיפו תמונה שלכן</h2>
+      <p style="color:var(--ink-soft); font-size:0.9rem; margin-bottom:14px;">התמונה הזו תייצג אתכן לאורך כל המשחק במקום שם בלבד</p>
+
+      <img id="photoPreviewImg" style="display:none; width:150px; height:150px; border-radius:50%; object-fit:cover; border:3px solid var(--gold); box-shadow:0 8px 22px rgba(0,0,0,0.4); margin:0 auto 18px;">
+
+      <input type="file" accept="image/*" capture="user" id="photoCameraInput" style="display:none;" onchange="handlePhotoSelected(this)">
+      <input type="file" accept="image/*" id="photoGalleryInput" style="display:none;" onchange="handlePhotoSelected(this)">
+
+      <button class="btn btn-primary" onclick="document.getElementById('photoCameraInput').click()">📸 צלמו סלפי</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('photoGalleryInput').click()">העלאת תמונה מהגלריה</button>
+
+      <div class="error" id="photoError"></div>
+      <button class="btn btn-primary" id="photoContinueBtn" disabled onclick="confirmJoinWithPhoto()">המשך למשחק</button>
+    </div>
+    <div style="text-align:center;"><span class="back-link" onclick="goTo('playerJoin')">חזרה</span></div>
+  </div>
+
   <!-- מסך המתנה שחקן -->
   <div id="playerWaiting" class="screen">
     <div class="card" style="text-align:center;">
@@ -1618,12 +1651,15 @@
     }
   }
 
-  const ANIMAL_AVATARS = ['🦉','🐶','🐱','🐬','🐦','🐟','🦊','🐼','🐨','🦁','🐸','🐢','🦋','🐧','🦄','🐰','🐙','🦔'];
-
-  function pickAvatarForName(name){
-    let hash = 0;
-    for(let i = 0; i < name.length; i++){ hash = (hash * 31 + name.charCodeAt(i)) >>> 0; }
-    return ANIMAL_AVATARS[hash % ANIMAL_AVATARS.length];
+  // כל שחקנית מעלה תמונה/סלפי משלה בהצטרפות - זו התמונה שמייצגת אותה לאורך המשחק.
+  // אם מסיבה כלשהי אין תמונה (למשל שחקנית ישנה מגרסה קודמת), נופלים לאות ראשונה של השם - לא לחיה.
+  function avatarThumbHTML(p, size){
+    size = size || 22;
+    if(p && p.photo){
+      return '<img src="' + p.photo + '" class="avatar-thumb" style="width:' + size + 'px;height:' + size + 'px;">';
+    }
+    const initial = (p && p.name) ? p.name.trim().charAt(0) : '?';
+    return '<span class="avatar-thumb" style="width:' + size + 'px;height:' + size + 'px; font-size:' + Math.round(size * 0.5) + 'px; color:var(--gold-light); font-weight:800; justify-content:center;">' + initial + '</span>';
   }
 
   const PLAYER_STALE_MS = 20000; // אם לא נשלחה "פעימת לב" 20 שניות - השחקן נחשב מנותק
@@ -1676,7 +1712,7 @@
       li.style.gap = '6px';
 
       const nameSpan = document.createElement('span');
-      nameSpan.textContent = (isBirthday ? '🎂 ' : '') + (p.avatar || pickAvatarForName(p.name)) + ' ' + p.name;
+      nameSpan.innerHTML = (isBirthday ? '🎂 ' : '') + avatarThumbHTML(p, 20) + ' ' + p.name;
       nameSpan.onclick = () => toggleBirthday(p.name);
       li.appendChild(nameSpan);
 
@@ -1789,6 +1825,10 @@
   }
 
   // ===== שחקן: הצטרפות =====
+  let pendingJoinCode = null;
+  let pendingJoinName = null;
+  let pendingJoinPhoto = null;
+
   async function joinRoom(){
     const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
     const name = document.getElementById('joinNameInput').value.trim();
@@ -1809,17 +1849,72 @@
         return;
       }
 
-      const usedAvatars = room.players.map(p => p.avatar).filter(Boolean);
-      const availableAvatars = ANIMAL_AVATARS.filter(a => !usedAvatars.includes(a));
-      const pool = availableAvatars.length > 0 ? availableAvatars : ANIMAL_AVATARS;
-      const avatar = pool[Math.floor(Math.random() * pool.length)];
+      // שלב הקוד+שם עבר בהצלחה - עוברים למסך צילום/העלאת תמונת פרופיל, ורק אחריו נרשמים סופית לחדר
+      pendingJoinCode = code;
+      pendingJoinName = name;
+      pendingJoinPhoto = null;
+      document.getElementById('photoError').textContent = '';
+      document.getElementById('photoPreviewImg').style.display = 'none';
+      document.getElementById('photoPreviewImg').src = '';
+      document.getElementById('photoContinueBtn').disabled = true;
+      goTo('playerPhoto');
+    }catch(e){
+      errEl.textContent = 'שגיאה: ' + (e && e.message ? e.message : e);
+      console.error(e);
+    }
+  }
 
-      room.players.push({ name: name, score: 0, avatar: avatar, joinedAt: Date.now(), lastSeen: Date.now() });
+  // מקבל קובץ תמונה (מהמצלמה הקדמית או מהגלריה), מכווץ אותו לריבוע קטן וממוטב
+  // כדי לא לחרוג ממגבלת הגודל של מסמך פיירסטור (חשוב במיוחד כשיש הרבה משתתפות בחדר אחד)
+  function handlePhotoSelected(inputEl){
+    const file = inputEl.files && inputEl.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const img = new Image();
+      img.onload = function(){
+        const size = 220;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        const minSide = Math.min(img.width, img.height);
+        const sx = (img.width - minSide) / 2;
+        const sy = (img.height - minSide) / 2;
+        ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+        pendingJoinPhoto = canvas.toDataURL('image/jpeg', 0.72);
+        const preview = document.getElementById('photoPreviewImg');
+        preview.src = pendingJoinPhoto;
+        preview.style.display = 'block';
+        document.getElementById('photoContinueBtn').disabled = false;
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    inputEl.value = '';
+  }
+
+  async function confirmJoinWithPhoto(){
+    const errEl = document.getElementById('photoError');
+    errEl.textContent = '';
+    if(!pendingJoinPhoto){ errEl.textContent = 'נא לצלם או להעלות תמונה כדי להמשיך'; return; }
+    if(!pendingJoinCode || !pendingJoinName){ goTo('playerJoin'); return; }
+
+    try{
+      const roomRef = db.collection('rooms').doc(pendingJoinCode);
+      const docSnap = await roomRef.get();
+      if(!docSnap.exists){ errEl.textContent = 'החדר כבר לא קיים'; return; }
+      const room = docSnap.data();
+      if(room.players.some(p => p.name === pendingJoinName)){
+        errEl.textContent = 'השם הזה כבר נתפס בינתיים, חיזרו אחורה ונסו שם אחר';
+        return;
+      }
+
+      room.players.push({ name: pendingJoinName, score: 0, photo: pendingJoinPhoto, joinedAt: Date.now(), lastSeen: Date.now() });
       await roomRef.set(room);
 
-      currentRoomCode = code;
-      currentPlayerName = name;
-      document.getElementById('welcomePlayerName').textContent = avatar + ' היי ' + name + '!';
+      currentRoomCode = pendingJoinCode;
+      currentPlayerName = pendingJoinName;
+      document.getElementById('welcomePlayerName').innerHTML = avatarThumbHTML({ photo: pendingJoinPhoto, name: pendingJoinName }, 30) + ' היי ' + pendingJoinName + '!';
       goTo('playerWaiting');
       listenAsPlayer();
       startHeartbeat();
@@ -2330,9 +2425,9 @@
 
       const { winnerIndex, rotation } = pickWheelWinnerAndRotation(pool);
       currentQuestion.wheelWinner = pool[winnerIndex].name;
-      currentQuestion.wheelWinnerAvatar = pool[winnerIndex].avatar || pickAvatarForName(pool[winnerIndex].name);
+      currentQuestion.wheelWinnerPhoto = pool[winnerIndex].photo || null;
       currentQuestion.wheelRotation = rotation;
-      currentQuestion.wheelPlayersSnapshot = pool.map(p => ({ name: p.name, avatar: p.avatar || pickAvatarForName(p.name) }));
+      currentQuestion.wheelPlayersSnapshot = pool.map(p => ({ name: p.name, photo: p.photo || null }));
       await roomRef.update(stripUndefined(Object.assign({ currentQuestion: currentQuestion }, usedUpdate)));
 
       setTimeout(() => {
@@ -2344,7 +2439,7 @@
         playSound('spin');
 
         setTimeout(async () => {
-          renderWinnerBadge('hostTodWheelWinnerName', currentQuestion.wheelWinnerAvatar, currentQuestion.wheelWinner);
+          renderWinnerBadge('hostTodWheelWinnerName', currentQuestion.wheelWinnerPhoto, currentQuestion.wheelWinner);
           playSound('tada');
           fireConfetti();
           setTimeout(async () => { await revealTodPrompt(currentQuestion, roomRef); }, 1200);
@@ -2667,7 +2762,7 @@
       revealed: false,
       infoRevealed: false,
       wheelWinner: null,
-      wheelWinnerAvatar: null,
+      wheelWinnerPhoto: null,
       wheelRotation: null
     };
   }
@@ -2739,31 +2834,41 @@
     return { winnerIndex: winnerIndex, rotation: rotation };
   }
 
-  const WHEEL_COLORS = ['#f6e6c4', '#7b3a8a', '#f6e6c4', '#c23a8a', '#f6e6c4', '#5c2568'];
+  // צבע קבוע לכל אינדקס: פלחים באי-זוגי תמיד קרם, פלחים בזוגי מתחלפים סגול/ורוד -
+  // בדיוק כמו בתמונת הייחוס (שיר-סגול, דנה-קרם, ליאור-סגול, נועה-קרם, מיקה-ורוד, רוני-קרם...)
+  const WHEEL_CREAM = '#f6e6c4';
+  const WHEEL_PURPLE = '#7b3a8a';
+  const WHEEL_PINK = '#c23a8a';
+  function wheelSliceColor(i){
+    if(i % 2 === 1) return WHEEL_CREAM;
+    return (Math.floor(i / 2) % 2 === 0) ? WHEEL_PURPLE : WHEEL_PINK;
+  }
 
-  // בונה את תגית הזוכה/ת בגלגל: תמונת אווטאר עגולה עם מסגרת זהב + סרט ורוד עם השם
-  function renderWinnerBadge(elId, avatar, name){
+  // בונה את תגית הזוכה/ת בגלגל: תמונת פרופיל עגולה עם מסגרת זהב + סרט ורוד עם השם
+  function renderWinnerBadge(elId, photo, name){
     const el = document.getElementById(elId);
     if(!el) return;
     if(!name){ el.innerHTML = ''; return; }
+    const circleContent = photo ? '<img src="' + photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : '🎉';
     el.innerHTML =
       '<div class="winner-badge-wrap">' +
-        '<div class="winner-avatar-circle">' + (avatar || '🎉') + '</div>' +
+        '<div class="winner-avatar-circle">' + circleContent + '</div>' +
         '<div class="winner-ribbon">' + name + ' 🎉</div>' +
       '</div>';
   }
+
 
   function renderWheelDisc(discEl, players){
     const n = players.length;
     const sliceAngle = 360 / n;
     let gradientParts = [];
     let dividerParts = [];
-    const dividerWidth = Math.min(1.4, sliceAngle * 0.06);
+    const dividerWidth = Math.max(1.2, Math.min(2.2, sliceAngle * 0.08));
     for(let i = 0; i < n; i++){
-      const color = WHEEL_COLORS[i % WHEEL_COLORS.length];
+      const color = wheelSliceColor(i);
       gradientParts.push(color + ' ' + (i * sliceAngle) + 'deg ' + ((i + 1) * sliceAngle) + 'deg');
       const boundary = i * sliceAngle;
-      dividerParts.push('transparent ' + boundary + 'deg', 'rgba(246,200,96,0.85) ' + boundary + 'deg', 'rgba(246,200,96,0.85) ' + (boundary + dividerWidth) + 'deg', 'transparent ' + (boundary + dividerWidth) + 'deg');
+      dividerParts.push('transparent ' + boundary + 'deg', 'var(--gold) ' + boundary + 'deg', 'var(--gold) ' + (boundary + dividerWidth) + 'deg', 'transparent ' + (boundary + dividerWidth) + 'deg');
     }
     discEl.style.background =
       'conic-gradient(' + dividerParts.join(',') + '), ' +
@@ -2773,12 +2878,14 @@
 
     players.forEach((p, i) => {
       const centerAngle = i * sliceAngle + sliceAngle / 2;
-      const color = WHEEL_COLORS[i % WHEEL_COLORS.length];
-      const isCream = color === '#f6e6c4';
+      const color = wheelSliceColor(i);
+      const isCream = color === WHEEL_CREAM;
       const label = document.createElement('div');
       label.className = 'wheel-label';
-      label.textContent = (p.avatar || pickAvatarForName(p.name)) + ' ' + p.name;
-      label.style.transform = 'rotate(' + centerAngle + 'deg) translateX(20px)';
+      label.innerHTML = avatarThumbHTML(p) + '<span>' + p.name + '</span>';
+      // תיקון: יש להפחית 90 מעלות כי translateX זז לאורך ציר ה-3 שעות (90 מעלות מהמעלה 0 שלמעלה),
+      // אחרת התווית לא מיושרת עם פלח הצבע שלה בגלגל
+      label.style.transform = 'rotate(' + (centerAngle - 90) + 'deg) translateX(20px)';
       if(isCream){
         label.style.color = '#3a1030';
         label.style.textShadow = '0 1px 2px rgba(255,255,255,0.35)';
@@ -2828,9 +2935,9 @@
     if(usesWheel){
       const { winnerIndex, rotation } = pickWheelWinnerAndRotation(pool);
       currentQuestion.wheelWinner = pool[winnerIndex].name;
-      currentQuestion.wheelWinnerAvatar = pool[winnerIndex].avatar || pickAvatarForName(pool[winnerIndex].name);
+      currentQuestion.wheelWinnerPhoto = pool[winnerIndex].photo || null;
       currentQuestion.wheelRotation = rotation;
-      currentQuestion.wheelPlayersSnapshot = pool.map(p => ({ name: p.name, avatar: p.avatar || pickAvatarForName(p.name) }));
+      currentQuestion.wheelPlayersSnapshot = pool.map(p => ({ name: p.name, photo: p.photo || null }));
 
       await roomRef.update({
         status: 'wheel',
@@ -2846,7 +2953,7 @@
       playSound('spin');
 
       setTimeout(async () => {
-        renderWinnerBadge('hostWheelWinnerName', currentQuestion.wheelWinnerAvatar, currentQuestion.wheelWinner);
+        renderWinnerBadge('hostWheelWinnerName', currentQuestion.wheelWinnerPhoto, currentQuestion.wheelWinner);
         playSound('tada');
         fireConfetti();
         setTimeout(async () => {
@@ -2976,8 +3083,7 @@
     return sorted.map((p, idx) => {
       const medal = medals[idx] || (idx + 1) + '.';
       const meClass = p.name === highlightName ? ' me' : '';
-      const avatar = p.avatar || pickAvatarForName(p.name);
-      return '<div class="leaderboard-row' + meClass + '"><span><span class="leaderboard-rank">' + medal + '</span>' + avatar + ' ' + p.name + '</span><span>' + (p.score || 0) + ' נק׳</span></div>';
+      return '<div class="leaderboard-row' + meClass + '"><span><span class="leaderboard-rank">' + medal + '</span>' + avatarThumbHTML(p, 22) + ' ' + p.name + '</span><span>' + (p.score || 0) + ' נק׳</span></div>';
     }).join('');
   }
 
@@ -3067,8 +3173,7 @@
         row.className = 'player-award-row';
         const nameSpan = document.createElement('span');
         nameSpan.className = 'pname';
-        const avatar = p.avatar || pickAvatarForName(p.name);
-        nameSpan.textContent = p.name === q.wheelWinner ? '🎯 ' + avatar + ' ' + p.name : avatar + ' ' + p.name;
+        nameSpan.innerHTML = (p.name === q.wheelWinner ? '🎯 ' : '') + avatarThumbHTML(p, 20) + ' ' + p.name;
         row.appendChild(nameSpan);
         if(!q.revealed){
           const btn = document.createElement('button');
@@ -3266,7 +3371,7 @@
           spinWheelDisc(discEl, room.currentQuestion.wheelRotation);
           playSound('spin');
           setTimeout(() => {
-            renderWinnerBadge('playerWheelWinnerName', room.currentQuestion.wheelWinnerAvatar, room.currentQuestion.wheelWinner);
+            renderWinnerBadge('playerWheelWinnerName', room.currentQuestion.wheelWinnerPhoto, room.currentQuestion.wheelWinner);
             playSound('tada');
             fireConfetti();
           }, 4200);
@@ -3312,7 +3417,7 @@
             spinWheelDisc(discEl, room.currentQuestion.wheelRotation);
             playSound('spin');
             setTimeout(() => {
-              renderWinnerBadge('playerTodWheelWinnerName', room.currentQuestion.wheelWinnerAvatar, room.currentQuestion.wheelWinner);
+              renderWinnerBadge('playerTodWheelWinnerName', room.currentQuestion.wheelWinnerPhoto, room.currentQuestion.wheelWinner);
               playSound('tada');
               fireConfetti();
             }, 4200);
@@ -3429,7 +3534,7 @@
       if(q.wheelWinner === currentPlayerName){
         openArea.innerHTML = '🎯 <strong>הגלגל בחר בכם!</strong><br>ענו בקול רם עכשיו';
       } else if(q.wheelWinner){
-        openArea.textContent = 'הגלגל בחר ב-' + (q.wheelWinnerAvatar || '') + ' ' + q.wheelWinner + ' - בהצלחה!';
+        openArea.textContent = 'הגלגל בחר ב-' + q.wheelWinner + ' - בהצלחה!';
       } else {
         openArea.textContent = 'שאלה פתוחה - ענו בקול רם!';
       }
