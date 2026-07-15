@@ -72,12 +72,40 @@
   }
   .screen{
     width:100%;
-    max-width: 420px;
+    max-width: 720px;
     display:none;
     position:relative;
     z-index:1;
   }
   .screen.active{ display:block; }
+
+  /* ---- כפיית תצוגה לרוחב: במצב עמידה (פורטרט) בטלפון מציגים בקשה לסובב ---- */
+  #rotateGate{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:5000;
+    background: linear-gradient(165deg, var(--bg-1) 0%, var(--bg-2) 80%);
+    color: var(--ink);
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding: 30px;
+    gap:14px;
+  }
+  #rotateGate .rotate-icon{ font-size:3.2rem; animation: rotate-hint 1.6s ease-in-out infinite; }
+  @keyframes rotate-hint{
+    0%, 100%{ transform: rotate(0deg); }
+    50%{ transform: rotate(90deg); }
+  }
+  @media (orientation: portrait) and (max-width: 900px){
+    #rotateGate{ display:flex; }
+    body > *:not(#rotateGate){ visibility:hidden; }
+  }
+  @media (orientation: landscape){
+    .card{ padding: 22px 30px; }
+  }
 
   /* ---- Landing ---- */
   #landing{
@@ -1025,6 +1053,11 @@
 </style>
 </head>
 <body>
+  <div id="rotateGate">
+    <div class="rotate-icon">📱</div>
+    <div style="font-weight:800; font-size:1.2rem;">סובבו את המכשיר לרוחב</div>
+    <div style="color:var(--ink-soft); font-size:0.9rem;">המשחק בנוי לתצוגה לרוחב - סובבו את הטלפון כדי להמשיך</div>
+  </div>
 
   <!-- מסך פתיחה -->
   <!-- מסך פתיחה: סרטון אינטרו -->
@@ -1043,13 +1076,13 @@
     <div class="landing-content">
       <h1 class="title">רותם &amp; צוף</h1>
       <div class="subtitle">משחק יום ההולדת</div>
-      <button class="btn btn-primary" onclick="goTo('hostCreate')">התחלת המשחק</button>
+      <button class="btn btn-primary" onclick="goTo('playerJoin')">הצטרפות למשחק</button>
       <button class="btn btn-ghost" onclick="toggleHowToPlay()">איך משחקים?</button>
       <div id="howToPlayBox" style="display:none; margin-top:16px; text-align:right; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 16px; font-size:0.9rem; color:var(--ink-soft); line-height:1.6;">
-        מי שפותח/ת את המשחק לוחצ/ת על "התחלת המשחק" ומקבלת קוד חדר. שאר המשתתפות מצטרפות לחדר לפי הקוד ממסך "הצטרפות למשחק" ומשם המשחק מתנהל אוטומטית לכולן, מכל טלפון.
+        לוחצות על "הצטרפות למשחק", מזינות את הקוד שקיבלתן ואת השם שלכן, ומשם המשחק מתנהל אוטומטית מהטלפון.
       </div>
-      <button class="btn btn-secondary" onclick="goTo('playerJoin')">הצטרפות למשחק (למשתתפות)</button>
       <button class="btn btn-ghost" id="resumeRoomBtn" onclick="resumeLastRoom()" style="display:none;"></button>
+      <div style="margin-top:22px;"><span class="back-link" style="font-size:0.72rem; opacity:0.55;" onclick="goTo('hostCreate')">ניהול חדר (למארגנת)</span></div>
     </div>
   </div>
 
@@ -2356,6 +2389,8 @@
 
       playSound('tada');
       fireConfetti();
+      document.getElementById('hostTodWheelStage').style.display = 'none';
+      document.getElementById('hostTodCategoryLine').style.display = 'none';
       document.getElementById('hostTodCategory').textContent = currentQuestion.spinResult === 'truth' ? '🟢 אמת' : '🔴 חובה';
       document.getElementById('hostTodPrompt').textContent = currentQuestion.text;
       document.getElementById('hostTodResult').style.display = 'block';
@@ -3303,6 +3338,8 @@
         }
 
         if(room.currentQuestion.revealed){
+          document.getElementById('playerTodWheelStage').style.display = 'none';
+          document.getElementById('playerTodCategoryLine').style.display = 'none';
           document.getElementById('playerTodCategory').textContent = room.currentQuestion.spinResult === 'truth' ? '🟢 אמת' : '🔴 חובה';
           document.getElementById('playerTodPrompt').textContent = room.currentQuestion.text;
           document.getElementById('playerTodResult').style.display = 'block';
