@@ -8,60 +8,31 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg-1: #6b2456;
-    --bg-2: #230f22;
-    --accent-glow: #e8548f;
-    --card-1: #4a1f45;
-    --card-2: #2c1329;
-    --card-border: rgba(244,199,120,0.35);
-    --gold: #f0c46e;
-    --gold-light: #ffe3ab;
-    --gold-deep: #b9832a;
-    --pink: #ff6fa0;
-    --pink-deep: #c93f74;
-    --ink: #fff2e2;
-    --ink-soft: #d9b0c9;
-    --page-text: #ffe6cf;
-    --surface: rgba(255,255,255,0.07);
-    --surface-strong: rgba(255,255,255,0.13);
-    --line: rgba(244,199,120,0.28);
-    --success: #7ddc9e;
-    --success-bg: rgba(125,220,158,0.16);
-    --danger-bg: rgba(255,111,160,0.16);
-    --cream: #fbeee0;
-    --bg: var(--surface);
-    --bg-deep: var(--bg-2);
-    --card: var(--cream);
-    --red: var(--pink);
+    --bg: #4A2A66;
+    --bg-deep: #2C1640;
+    --card: #3A1F56;
+    --card-border: #F0B429;
+    --gold: #F0B429;
+    --red: #E8449A;
+    --ink: #FBEFFF;
+    --ink-soft: #C9A9DE;
+    --page-text: #FBEFFF;
+    --input-bg: #4A2A66;
+    --input-border: #7A4FA3;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     font-family:'Outfit', sans-serif;
     background:
-      radial-gradient(circle at 50% -8%, var(--accent-glow) 0%, transparent 42%),
-      radial-gradient(circle at 12% 88%, rgba(240,196,110,0.16) 0%, transparent 40%),
-      linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 85%);
-    background-attachment: fixed;
+      radial-gradient(circle at 20% 15%, rgba(240,180,41,0.20) 0%, transparent 35%),
+      radial-gradient(circle at 80% 10%, rgba(232,68,154,0.20) 0%, transparent 35%),
+      radial-gradient(circle at 50% -10%, var(--bg) 0%, var(--bg-deep) 70%);
     color: var(--page-text);
     min-height:100vh;
     display:flex;
     align-items:center;
     justify-content:center;
     padding: 24px;
-    position:relative;
-  }
-  body::before{
-    content:"";
-    position:fixed;
-    inset:0;
-    background-image:
-      radial-gradient(rgba(255,255,255,0.55) 1px, transparent 1px),
-      radial-gradient(rgba(255,227,171,0.35) 1px, transparent 1px);
-    background-size: 64px 64px, 96px 96px;
-    background-position: 0 0, 32px 42px;
-    opacity:0.22;
-    pointer-events:none;
-    z-index:0;
   }
   h1, h2, h3, .display{
     font-family:'Baloo 2', sans-serif;
@@ -70,8 +41,6 @@
     width:100%;
     max-width: 420px;
     display:none;
-    position:relative;
-    z-index:1;
   }
   .screen.active{ display:block; }
 
@@ -81,34 +50,29 @@
     width:96px; height:96px;
     margin:0 auto 18px;
     border-radius:50%;
-    background: conic-gradient(var(--gold) 0deg 90deg, var(--pink) 90deg 180deg, var(--gold) 180deg 270deg, var(--pink) 270deg 360deg);
-    border: 5px solid var(--cream);
-    box-shadow: 0 0 24px rgba(240,196,110,0.4);
+    background: conic-gradient(var(--gold) 0deg 90deg, var(--red) 90deg 180deg, var(--gold) 180deg 270deg, var(--red) 270deg 360deg);
+    border: 5px solid var(--card);
     position:relative;
     animation: spin-slow 14s linear infinite;
   }
   .wheel-mark::after{
     content:"";
     position:absolute; inset:38%;
-    background:var(--cream);
+    background:var(--card);
     border-radius:50%;
   }
   @keyframes spin-slow{ to{ transform: rotate(360deg);} }
   @media (prefers-reduced-motion: reduce){ .wheel-mark{ animation:none; } }
 
   h1.title{
-    font-size: 2.3rem;
+    font-size: 2.1rem;
     font-weight:800;
+    color:var(--ink);
     letter-spacing:0.5px;
-    background: linear-gradient(90deg, var(--gold-light), var(--gold) 55%, var(--pink));
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-    filter: drop-shadow(0 0 22px rgba(240,196,110,0.35));
+    text-shadow: 0 0 24px rgba(240,180,41,0.5), 0 0 48px rgba(232,68,154,0.25);
   }
   .subtitle{
-    color: var(--page-text);
-    opacity:0.85;
+    color: var(--ink-soft);
     font-size:0.95rem;
     margin-top:6px;
     margin-bottom: 34px;
@@ -127,20 +91,20 @@
   }
   .btn:active{ transform: scale(0.97); }
   .btn-primary{
-    background: linear-gradient(135deg, var(--gold-light), var(--gold) 55%, var(--pink));
-    color: #3a1030;
-    box-shadow: 0 6px 0 var(--gold-deep), 0 12px 26px rgba(240,196,110,0.3);
+    background: linear-gradient(180deg, #F7C550, var(--gold));
+    color: #2C1640;
+    box-shadow: 0 6px 0 #B5850F, 0 8px 20px rgba(240,180,41,0.35);
   }
-  .btn-primary:active{ box-shadow: 0 2px 0 var(--gold-deep); }
+  .btn-primary:active{ box-shadow: 0 2px 0 #B5850F; }
   .btn-secondary{
-    background: var(--surface);
+    background: rgba(255,255,255,0.05);
     color: var(--ink);
-    border: 2px solid var(--line);
+    border: 2px solid rgba(240,180,41,0.35);
     margin-top: 14px;
   }
   .btn-ghost{
     background: transparent;
-    color: var(--gold-light);
+    color: var(--ink-soft);
     border: none;
     text-decoration: underline;
     font-family:'Outfit', sans-serif;
@@ -151,12 +115,12 @@
 
   /* ---- Card shell for sub-screens ---- */
   .card{
-    background: linear-gradient(165deg, var(--card-1) 0%, var(--card-2) 100%);
+    background: var(--card);
     color: var(--ink);
-    border-radius: 26px;
-    padding: 30px 24px;
-    border: 1px solid var(--card-border);
-    box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 44px rgba(240,196,110,0.08);
+    border-radius: 22px;
+    padding: 28px 24px;
+    border: 1.5px solid rgba(240,180,41,0.4);
+    box-shadow: 0 10px 34px rgba(0,0,0,0.45), 0 0 0 1px rgba(240,180,41,0.08) inset;
   }
   .eyebrow{
     font-size:0.78rem;
@@ -170,27 +134,23 @@
     font-size:1.5rem;
     margin-bottom: 18px;
     color: var(--ink);
+    text-shadow: 0 0 18px rgba(240,180,41,0.35);
   }
   input[type=text]{
     width:100%;
     padding: 14px 16px;
     border-radius: 12px;
-    border: 2px solid var(--line);
-    background: var(--surface);
+    border: 2px solid var(--input-border);
+    background: var(--input-bg);
     font-family:'Outfit', sans-serif;
     font-size: 1.05rem;
     color: var(--ink);
     margin-bottom: 14px;
     text-align:center;
   }
-  input[type=text]::placeholder, textarea::placeholder{
-    color: var(--ink-soft);
-    opacity:0.75;
-  }
   input[type=text]:focus{
     outline: none;
     border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(240,196,110,0.18);
   }
   input.code-input{
     font-family:'Baloo 2', sans-serif;
@@ -199,7 +159,7 @@
     font-weight:700;
   }
   .error{
-    color: var(--pink);
+    color: var(--red);
     font-size:0.88rem;
     font-weight:600;
     margin-bottom: 10px;
@@ -221,8 +181,8 @@
     font-size: 3rem;
     font-weight:800;
     letter-spacing: 10px;
-    color: var(--gold-light);
-    filter: drop-shadow(0 0 18px rgba(240,196,110,0.35));
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(240,180,41,0.6);
   }
   .player-list{
     list-style:none;
@@ -233,9 +193,8 @@
     min-height: 40px;
   }
   .player-chip{
-    background: var(--surface-strong);
+    background: var(--bg);
     color: var(--ink);
-    border: 1px solid var(--line);
     padding: 8px 14px;
     border-radius: 999px;
     font-weight:600;
@@ -259,8 +218,8 @@
   .back-link{
     display:inline-block;
     margin-top: 16px;
-    color: var(--gold-light);
-    opacity:0.85;
+    color: var(--ink);
+    opacity:0.75;
     text-decoration:underline;
     font-size:0.88rem;
     cursor:pointer;
@@ -276,8 +235,8 @@
     flex:1;
     padding: 12px 8px;
     border-radius: 12px;
-    border: 2px solid var(--line);
-    background: var(--surface);
+    border: 2px solid var(--input-border);
+    background: var(--input-bg);
     color: var(--ink-soft);
     font-weight:600;
     font-size:0.88rem;
@@ -286,16 +245,15 @@
   }
   .type-btn.active{
     border-color: var(--gold);
-    background: var(--surface-strong);
+    background: rgba(240,180,41,0.25);
     color: var(--ink);
-    box-shadow: 0 0 0 1px var(--gold) inset;
   }
   textarea.qtext{
     width:100%;
     padding: 14px 16px;
     border-radius: 12px;
-    border: 2px solid var(--line);
-    background: var(--surface);
+    border: 2px solid var(--input-border);
+    background: var(--input-bg);
     font-family:'Outfit', sans-serif;
     font-size: 1.05rem;
     color: var(--ink);
@@ -319,8 +277,8 @@
     width:90px;
     padding: 10px 12px;
     border-radius: 12px;
-    border: 2px solid var(--line);
-    background: var(--surface);
+    border: 2px solid var(--input-border);
+    background: var(--input-bg);
     font-family:'Baloo 2', sans-serif;
     font-size: 1.1rem;
     font-weight:700;
@@ -341,14 +299,14 @@
   .correct-check{
     width: 26px; height: 26px;
     border-radius: 50%;
-    border: 2px solid var(--line);
-    background: var(--surface);
+    border: 2px solid #C9BC9F;
+    background: #fff;
     cursor:pointer;
     flex-shrink:0;
   }
   .correct-check.selected{
-    background: var(--success);
-    border-color: var(--success);
+    background: #4C9A6A;
+    border-color: #4C9A6A;
   }
 
   /* live question display */
@@ -361,8 +319,8 @@
   }
   .points-pill{
     display:inline-block;
-    background: linear-gradient(135deg, var(--gold-light), var(--gold));
-    color: #3a1030;
+    background: var(--gold);
+    color: #2C1640;
     font-weight:700;
     font-size:0.85rem;
     padding: 4px 12px;
@@ -375,8 +333,8 @@
     text-align:right;
     padding: 16px 18px;
     border-radius: 14px;
-    border: 2px solid var(--line);
-    background: var(--surface);
+    border: 2px solid var(--input-border);
+    background: var(--input-bg);
     color: var(--ink);
     font-family:'Outfit', sans-serif;
     font-weight:600;
@@ -386,12 +344,13 @@
   }
   .answer-btn:active{ transform: scale(0.98); }
   .answer-btn.correct{
-    background: var(--success-bg);
-    border-color: var(--success);
+    background: rgba(76,154,106,0.35);
+    border-color: #5ECB8B;
+    color: #EFFFF4;
   }
   .answer-btn.wrong{
-    background: var(--danger-bg);
-    border-color: var(--pink);
+    background: rgba(232,68,154,0.25);
+    border-color: var(--red);
   }
   .answer-btn.chosen{
     box-shadow: 0 0 0 3px var(--gold) inset;
@@ -406,7 +365,7 @@
     display:flex;
     justify-content:space-between;
     align-items:center;
-    background: var(--surface);
+    background: var(--bg);
     color: var(--ink);
     border-radius: 12px;
     padding: 10px 14px;
@@ -414,8 +373,8 @@
   }
   .player-award-row span.pname{ font-weight:600; }
   .award-btn{
-    background: linear-gradient(135deg, var(--gold-light), var(--gold));
-    color: #3a1030;
+    background: var(--gold);
+    color: #2C1640;
     border:none;
     border-radius: 999px;
     padding: 6px 14px;
@@ -430,8 +389,8 @@
     font-weight:800;
     margin-bottom: 8px;
   }
-  .result-banner.correct{ color: var(--success); }
-  .result-banner.wrong{ color: var(--pink); }
+  .result-banner.correct{ color:#2F8F53; }
+  .result-banner.wrong{ color: var(--red); }
   .score-line{
     text-align:center;
     color: var(--ink-soft);
@@ -450,16 +409,16 @@
     width:0; height:0;
     border-left: 14px solid transparent;
     border-right: 14px solid transparent;
-    border-top: 22px solid var(--gold-light);
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    border-top: 22px solid var(--gold);
     margin-bottom: -4px;
     z-index:2;
+    filter: drop-shadow(0 0 6px rgba(240,180,41,0.7));
   }
   .wheel-outer{
     width: 260px; height: 260px;
     border-radius:50%;
-    border: 6px solid var(--cream);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 3px rgba(240,196,110,0.25);
+    border: 6px solid var(--gold);
+    box-shadow: 0 8px 30px rgba(240,180,41,0.4);
     position:relative;
     overflow:hidden;
   }
@@ -488,9 +447,9 @@
     top:50%; left:50%;
     width:36px; height:36px;
     transform:translate(-50%,-50%);
-    background: var(--cream);
+    background: var(--card);
     border-radius:50%;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
     z-index:2;
   }
   .wheel-caption{
@@ -503,8 +462,7 @@
     font-family:'Baloo 2', sans-serif;
     font-size:1.4rem;
     font-weight:800;
-    color: var(--gold-light);
-    filter: drop-shadow(0 0 14px rgba(240,196,110,0.3));
+    color: var(--ink);
     margin-top: 4px;
   }
 
@@ -515,9 +473,9 @@
     height:220px;
     margin:10px auto 0;
     border-radius:50%;
-    background: radial-gradient(circle, var(--card-1) 0%, var(--card-2) 100%);
-    border: 4px solid var(--cream);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(74,42,102,0.5) 100%);
+    border: 4px solid var(--card);
+    box-shadow: 0 8px 24px rgba(91,44,70,0.2);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -529,16 +487,16 @@
     font-family:'Baloo 2', sans-serif;
     font-weight:800;
     font-size:1.05rem;
-    color: var(--gold-light);
+    color: var(--red);
     padding: 4px 14px;
     border-radius: 999px;
     transition: all 0.3s ease;
   }
   .bottle-label.landed{
-    background: linear-gradient(135deg, var(--gold), var(--pink));
-    color: #3a1030;
+    background: var(--gold);
+    color: var(--ink);
     transform: translateX(-50%) scale(1.25);
-    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   }
   .bottle-label-top{ top:12px; }
   .bottle-label-bottom{ bottom:12px; }
@@ -553,7 +511,7 @@
     border-radius: 14px;
     margin-bottom: 14px;
     overflow:hidden;
-    background:#00000020;
+    background:#00000010;
   }
   .question-media img, .question-media video{
     width:100%;
@@ -571,8 +529,8 @@
     width:100%;
     padding: 12px 14px;
     border-radius: 12px;
-    border: 2px solid var(--line);
-    background: var(--surface);
+    border: 2px solid var(--input-border);
+    background: var(--input-bg);
     font-family:'Outfit', sans-serif;
     font-size: 0.95rem;
     color: var(--ink);
@@ -589,18 +547,16 @@
     padding: 10px 14px;
     border-radius: 12px;
     margin-bottom: 6px;
-    background: var(--surface);
+    background: rgba(255,255,255,0.06);
     font-weight:600;
-    color: var(--ink);
   }
   .leaderboard-row.me{
-    background: linear-gradient(135deg, var(--gold-light), var(--gold));
-    color: #3a1030;
+    background: var(--gold);
+    color: #2C1640;
   }
   .leaderboard-rank{
     font-weight:800;
     margin-left: 8px;
-    color: var(--gold-light);
   }
   .section-title{
     font-size:0.95rem;
@@ -616,9 +572,9 @@
 
   /* ---- Birthday marker ---- */
   .player-chip.birthday{
-    background: linear-gradient(135deg, var(--gold), var(--pink));
-    color: #3a1030;
-    box-shadow: 0 0 0 1px var(--gold-light) inset;
+    background: var(--gold);
+    color: var(--ink);
+    box-shadow: 0 0 0 2px var(--red) inset;
   }
   .player-chip{ cursor:pointer; }
 
@@ -631,14 +587,14 @@
     justify-content:center;
     gap: 10px 14px;
     padding: 16px;
-    background: var(--surface);
+    background: rgba(255,255,255,0.06);
     border-radius: 16px;
     margin-bottom: 14px;
   }
   .cloud-word{
     font-family:'Baloo 2', sans-serif;
     font-weight:700;
-    color: var(--pink);
+    color: var(--red);
     animation: pop-in 0.3s ease;
   }
   @keyframes pop-in{
@@ -649,8 +605,8 @@
     width:100%;
     padding: 14px 16px;
     border-radius: 12px;
-    border: 2px solid var(--line);
-    background: var(--surface);
+    border: 2px solid var(--input-border);
+    background: var(--input-bg);
     font-family:'Outfit', sans-serif;
     font-size: 1.05rem;
     color: var(--ink);
@@ -660,7 +616,7 @@
 
   /* ---- Reveal answer ---- */
   .reveal-box{
-    background: var(--surface);
+    background: rgba(255,255,255,0.06);
     border-radius: 14px;
     padding: 18px;
     text-align:center;
@@ -679,7 +635,7 @@
     font-family:'Baloo 2', sans-serif;
     font-size:1.25rem;
     font-weight:700;
-    color: var(--gold-light);
+    color: var(--ink);
   }
 
   /* ---- Confetti ---- */
@@ -698,15 +654,14 @@
 
   /* ---- Bank list row actions ---- */
   .bank-row{
-    background: var(--surface);
-    border: 1px solid var(--line);
+    background: var(--bg);
     border-radius: 12px;
     padding: 10px 14px;
     margin-bottom: 8px;
     transition: box-shadow 0.15s ease;
   }
   .bank-row.dragging-row{
-    box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.3);
     z-index: 50;
     position: relative;
     opacity: 0.95;
@@ -724,8 +679,8 @@
     width: 50px;
     padding: 4px 6px;
     border-radius: 8px;
-    border: 2px solid var(--line);
-    background: var(--surface);
+    border: 2px solid var(--input-border);
+    background: var(--input-bg);
     font-family:'Baloo 2', sans-serif;
     font-weight:700;
     font-size: 0.9rem;
@@ -746,15 +701,15 @@
     align-items:center;
   }
   .icon-btn{
-    border:none;
-    background: var(--surface-strong);
+    border: 1px solid rgba(240,180,41,0.35);
+    background: rgba(255,255,255,0.08);
     border-radius: 8px;
     padding: 6px 10px;
     font-size:0.85rem;
     cursor:pointer;
     color: var(--ink);
   }
-  .icon-btn.danger{ color: var(--pink); }
+  .icon-btn.danger{ color: #FF8FB3; }
   .wheel-toggle-btn{
     border:none;
     border-radius: 999px;
@@ -763,8 +718,8 @@
     font-weight:700;
     cursor:pointer;
   }
-  .wheel-toggle-btn.on{ background: linear-gradient(135deg, var(--gold-light), var(--gold)); color: #3a1030; }
-  .wheel-toggle-btn.off{ background: var(--surface-strong); color: var(--ink-soft); }
+  .wheel-toggle-btn.on{ background: var(--gold); color: #2C1640; }
+  .wheel-toggle-btn.off{ background: rgba(255,255,255,0.08); color: var(--ink-soft); }
   .intro-fullscreen{
     position:fixed;
     inset:0;
@@ -777,17 +732,6 @@
     max-width:none;
   }
   .intro-fullscreen.active{ display:flex; }
-
-  /* ---- Truth/Dare bank category labels ---- */
-  .tod-cat-label{
-    font-weight:700;
-    margin-bottom:6px;
-    display:flex;
-    align-items:center;
-    gap:6px;
-  }
-  .tod-cat-label.truth{ color: var(--gold-light); }
-  .tod-cat-label.dare{ color: var(--pink); }
 </style>
 </head>
 <body>
@@ -796,7 +740,7 @@
   <!-- מסך פתיחה: סרטון אינטרו -->
   <div id="introScreen" class="screen intro-fullscreen active">
     <video id="introVideo" src="intro-video.mp4" autoplay playsinline muted onended="showIntroEnterButton()" onclick="goTo('landing')" style="width:100vw; height:100vh; object-fit:cover; display:block;"></video>
-    <button id="introEnterBtn" onclick="goTo('landing')" style="display:none; position:absolute; bottom:12%; left:50%; transform:translateX(-50%); background:linear-gradient(135deg, var(--gold-light), var(--gold) 55%, var(--pink)); color:#3a1030; border:none; border-radius:16px; padding:18px 36px; font-family:'Baloo 2', sans-serif; font-weight:700; font-size:1.2rem; box-shadow:0 6px 0 var(--gold-deep); animation:reveal-pop 0.5s ease;">🎉 כניסה למשחק</button>
+    <button id="introEnterBtn" onclick="goTo('landing')" style="display:none; position:absolute; bottom:12%; left:50%; transform:translateX(-50%); background:var(--gold); color:var(--ink); border:none; border-radius:16px; padding:18px 36px; font-family:'Baloo 2', sans-serif; font-weight:700; font-size:1.2rem; box-shadow:0 6px 0 #D97FA0; animation:reveal-pop 0.5s ease;">🎉 כניסה למשחק</button>
   </div>
 
   <div id="landing" class="screen">
@@ -815,7 +759,7 @@
       <input type="text" id="hostNameInput" placeholder="השם שלך (לדוגמה: דנה)">
       <div class="error" id="hostCreateError"></div>
       <button class="btn btn-primary" onclick="createRoom()">צור/י חדר</button>
-      <hr style="margin:20px 0; border:none; border-top:1px solid #E3D9C5;">
+      <hr style="margin:20px 0; border:none; border-top:1px solid var(--input-border);">
       <p style="font-size:0.85rem; color:var(--ink-soft); margin-bottom:8px;">כבר יש לכם חדר? נהלו אותו מכל מכשיר לפי הקוד:</p>
       <input type="text" id="rejoinCodeInput" class="code-input" maxlength="4" placeholder="קוד" oninput="this.value=this.value.toUpperCase()">
       <div class="error" id="rejoinError"></div>
@@ -870,19 +814,20 @@
     <div class="card">
       <div class="eyebrow">מנהל/ת</div>
       <h2>🍾 מאגר אמת או חובה</h2>
-      <p style="font-size:0.82rem; color:var(--ink-soft); margin-bottom:10px;">שורה אחת לכל שאלה/משימה. כל קטגוריה יודעת למי היא מיועדת - המשחק יבחר אקראית קודם אמת/חובה, ואז לפי השאלה שתצא יבחר אוטומטית חוגגת או משתתפת, בלי לחזור על אותה אחת פעמיים.</p>
-      <p class="tod-cat-label truth">🟢 אמת - לחוגגות</p>
-      <textarea class="qtext" id="truthCelebrantPoolInput" style="min-height:100px;" placeholder="מה הדבר הכי מביך שקרה לך?
-מי המשפחה שהכי קרובה אליך?"></textarea>
-      <p class="tod-cat-label truth">🟢 אמת - למשתתפות</p>
-      <textarea class="qtext" id="truthParticipantPoolInput" style="min-height:100px;" placeholder="מה הדבר הכי מביך שקרה לך?
-איך הכרתן את החוגגת?"></textarea>
-      <p class="tod-cat-label dare">🔴 חובה - לחוגגות</p>
-      <textarea class="qtext" id="dareCelebrantPoolInput" style="min-height:100px;" placeholder="תרקדו ריקוד מצחיק במשך 10 שניות
-ספרו סיפור מביך על עצמכן"></textarea>
-      <p class="tod-cat-label dare">🔴 חובה - למשתתפות</p>
-      <textarea class="qtext" id="dareParticipantPoolInput" style="min-height:100px;" placeholder="תחקו מישהי מהחדר
-שירו שיר לחוגגת"></textarea>
+      <p style="font-size:0.82rem; color:var(--ink-soft); margin-bottom:10px;">שורה אחת לכל שאלה/משימה. כל שאלה יודעת למי היא מיועדת - המשחק יבחר אקראית ולא יחזור על אותה אחת פעמיים.</p>
+
+      <p style="font-weight:700; margin-bottom:6px;">🟢🎂 אמת - לחוגגות</p>
+      <textarea class="qtext" id="truthBirthdayInput" style="min-height:100px;" placeholder="מה הדבר הכי מביך שקרה לך?"></textarea>
+
+      <p style="font-weight:700; margin-bottom:6px;">🟢👥 אמת - למשתתפות</p>
+      <textarea class="qtext" id="truthAllInput" style="min-height:100px;" placeholder="מי המשפחה שהכי קרובה אליך?"></textarea>
+
+      <p style="font-weight:700; margin-bottom:6px;">🔴🎂 חובה - לחוגגות</p>
+      <textarea class="qtext" id="dareBirthdayInput" style="min-height:100px;" placeholder="תרקדו ריקוד מצחיק במשך 10 שניות"></textarea>
+
+      <p style="font-weight:700; margin-bottom:6px;">🔴👥 חובה - למשתתפות</p>
+      <textarea class="qtext" id="dareAllInput" style="min-height:100px;" placeholder="תחקו מישהו מהחדר"></textarea>
+
       <div class="error" id="todBankError"></div>
       <button class="btn btn-primary" onclick="saveTodBank()">שמרו מאגר</button>
     </div>
@@ -1013,7 +958,7 @@
         </div>
         <div class="points-row">
           <label for="targetSelect">מי יכול/ה להיבחר:</label>
-          <select id="targetSelect" style="padding:8px 10px; border-radius:10px; border:2px solid #E3D9C5;">
+          <select id="targetSelect" style="padding:8px 10px; border-radius:10px; border:2px solid var(--input-border);">
             <option value="all">כל המשתתפים (חוץ מהחוגגות)</option>
             <option value="birthday">החוגגות בלבד</option>
           </select>
@@ -1632,7 +1577,7 @@
 
     document.getElementById('optionsContainer').style.display = type === 'mc' ? 'block' : 'none';
     document.getElementById('revealTextInput').style.display = type === 'reveal' ? 'block' : 'none';
-    document.getElementById('wheelTargetRow').style.display = (type === 'open') ? 'block' : 'none';
+    document.getElementById('wheelTargetRow').style.display = type === 'open' ? 'block' : 'none';
     document.getElementById('wheelEnabledWrap').style.display = type === 'open' ? 'flex' : 'none';
     document.getElementById('pointsRow').style.display = (type === 'mc' || type === 'open') ? 'flex' : 'none';
     document.getElementById('timeLimitRow').style.display = type === 'mc' ? 'flex' : 'none';
@@ -1647,7 +1592,7 @@
       open: 'בחרו למטה אם להפעיל גלגל מזל ומי יכול/ה להיבחר.',
       cloud: 'כל השחקנים כותבים תשובה קצרה, והמילים הנפוצות מוצגות גדולות יותר, בזמן אמת אצל כולם.',
       reveal: 'מציגים מידע/עובדה, ולוחצים כפתור כדי לחשוף אותו באנימציה.',
-      tod: 'בקבוק מסתובב ונוחת על אמת או חובה, ואז נבחרת שאלה אקראית מהמאגר (בלי חזרות) - וממנה נקבע אוטומטית אם גלגל השמות יבחר חוגגת או משתתפת. הכינו את 4 הקטגוריות במסך "ניהול אמת/חובה" בבנק השאלות.'
+      tod: 'בקבוק מסתובב ונוחת על אמת או חובה, נבחרת שאלה אקראית מהמאגר (בלי חזרות), ולפי סוג השאלה שנבחרה (לחוגגות/למשתתפות) מופעל אוטומטית גלגל שמות מתאים. הכינו את המאגר במסך "ניהול אמת/חובה" בבנק השאלות.'
     };
     document.getElementById('typeHint').textContent = hints[type] || '';
   }
@@ -1852,7 +1797,7 @@
       mediaUrl: mediaUrl,
       revealText: revealText,
       wheelEnabled: selectedQuestionType === 'open' ? document.getElementById('wheelEnabledInput').checked : false,
-      target: (selectedQuestionType === 'open') ? document.getElementById('targetSelect').value : 'all',
+      target: (selectedQuestionType === 'open' || selectedQuestionType === 'tod') ? document.getElementById('targetSelect').value : 'all',
       options: options,
       correctIndex: selectedQuestionType === 'mc' ? selectedCorrectIndex : null,
       edited: true
@@ -1892,10 +1837,10 @@
     try{
       const docSnap = await db.collection('rooms').doc(currentRoomCode).get();
       const room = docSnap.data();
-      document.getElementById('truthCelebrantPoolInput').value = (room.truthCelebrantPool || []).join('\n');
-      document.getElementById('truthParticipantPoolInput').value = (room.truthParticipantPool || []).join('\n');
-      document.getElementById('dareCelebrantPoolInput').value = (room.dareCelebrantPool || []).join('\n');
-      document.getElementById('dareParticipantPoolInput').value = (room.dareParticipantPool || []).join('\n');
+      document.getElementById('truthBirthdayInput').value = (room.truthBirthdayPool || []).join('\n');
+      document.getElementById('truthAllInput').value = (room.truthAllPool || []).join('\n');
+      document.getElementById('dareBirthdayInput').value = (room.dareBirthdayPool || []).join('\n');
+      document.getElementById('dareAllInput').value = (room.dareAllPool || []).join('\n');
       goTo('hostTodBank');
     }catch(e){
       console.error(e);
@@ -1903,20 +1848,20 @@
   }
 
   async function saveTodBank(){
-    const truthCelebrantPool = document.getElementById('truthCelebrantPoolInput').value.split('\n').map(l => l.trim()).filter(Boolean);
-    const truthParticipantPool = document.getElementById('truthParticipantPoolInput').value.split('\n').map(l => l.trim()).filter(Boolean);
-    const dareCelebrantPool = document.getElementById('dareCelebrantPoolInput').value.split('\n').map(l => l.trim()).filter(Boolean);
-    const dareParticipantPool = document.getElementById('dareParticipantPoolInput').value.split('\n').map(l => l.trim()).filter(Boolean);
+    const truthBirthdayPool = document.getElementById('truthBirthdayInput').value.split('\n').map(l => l.trim()).filter(Boolean);
+    const truthAllPool = document.getElementById('truthAllInput').value.split('\n').map(l => l.trim()).filter(Boolean);
+    const dareBirthdayPool = document.getElementById('dareBirthdayInput').value.split('\n').map(l => l.trim()).filter(Boolean);
+    const dareAllPool = document.getElementById('dareAllInput').value.split('\n').map(l => l.trim()).filter(Boolean);
     const errEl = document.getElementById('todBankError');
     errEl.textContent = '';
 
     try{
       const roomRef = db.collection('rooms').doc(currentRoomCode);
       await roomRef.update({
-        truthCelebrantPool: truthCelebrantPool,
-        truthParticipantPool: truthParticipantPool,
-        dareCelebrantPool: dareCelebrantPool,
-        dareParticipantPool: dareParticipantPool
+        truthBirthdayPool: truthBirthdayPool,
+        truthAllPool: truthAllPool,
+        dareBirthdayPool: dareBirthdayPool,
+        dareAllPool: dareAllPool
       });
       goTo('hostQuestionBank');
       refreshBankView();
@@ -1943,36 +1888,6 @@
   function pickTodCategory(lastCategory){
     if(!lastCategory) return Math.random() < 0.5 ? 'truth' : 'dare';
     return lastCategory === 'truth' ? 'dare' : 'truth';
-  }
-
-  // בוחר שאלה/משימה אקראית מתוך המאגר המתאים (אמת/חובה), וקובע לפי השאלה שיצאה
-  // האם היא מיועדת לחוגגת או למשתתפת - כדי שגלגל השמות שאחריה ידע את מי לסנן
-  function pickTodQuestion(room, category){
-    const celebPoolKey = category === 'truth' ? 'truthCelebrantPool' : 'dareCelebrantPool';
-    const partPoolKey = category === 'truth' ? 'truthParticipantPool' : 'dareParticipantPool';
-    const celebUsedKey = category === 'truth' ? 'usedTruthCelebrantPrompts' : 'usedDareCelebrantPrompts';
-    const partUsedKey = category === 'truth' ? 'usedTruthParticipantPrompts' : 'usedDareParticipantPrompts';
-
-    const celebPool = room[celebPoolKey] || [];
-    const partPool = room[partPoolKey] || [];
-
-    const availableTargets = [];
-    if(celebPool.length > 0) availableTargets.push('celebrant');
-    if(partPool.length > 0) availableTargets.push('participant');
-
-    if(availableTargets.length === 0){
-      const fallback = category === 'truth' ? 'לא הוכנו שאלות אמת - הוסיפו במאגר!' : 'לא הוכנו משימות חובה - הוסיפו במאגר!';
-      return { text: fallback, questionTarget: 'participant', usedKey: partUsedKey, newUsedList: room[partUsedKey] || [] };
-    }
-
-    const questionTarget = availableTargets[Math.floor(Math.random() * availableTargets.length)];
-    const poolKey = questionTarget === 'celebrant' ? celebPoolKey : partPoolKey;
-    const usedKey = questionTarget === 'celebrant' ? celebUsedKey : partUsedKey;
-    const pool = room[poolKey] || [];
-    const usedList = room[usedKey] || [];
-    const { item, usedList: newUsedList } = pickRandomFromPool(pool, usedList);
-
-    return { text: item, questionTarget: questionTarget, usedKey: usedKey, newUsedList: newUsedList };
   }
 
   // ===== מנהל: הרצת סיבוב אמת או חובה (בקבוק + גלגל שמות + חשיפה) =====
@@ -2014,74 +1929,111 @@
     playSound('spin');
 
     setTimeout(async () => {
-      await proceedAfterBottle(currentQuestion, room, roomRef);
+      await proceedAfterBottle(currentQuestion, roomRef);
     }, spinDurationMs + 300);
   }
 
-  // שלב 2: אחרי שהבקבוק נוחת - בוחרים שאלה מהמאגר המתאים (וכך יודעים חוגגת/משתתפת), ואז מריצים גלגל שמות
-  async function proceedAfterBottle(currentQuestion, room, roomRef){
+  // בוחר פריט אקראי מתוך שתי תת-רשימות (לחוגגות / למשתתפות) של אותה קטגוריה,
+  // ומחזיר גם מאיזו רשימה הוא הגיע (כדי לדעת אחר כך את מי להגריל בגלגל)
+  function pickTodPromptWithSource(birthdayPool, allPool, usedBirthday, usedDare){
+    const birthdayAvailable = birthdayPool.filter(t => !usedBirthday.includes(t));
+    const allAvailable = allPool.filter(t => !usedDare.includes(t));
+
+    let combined = birthdayAvailable.map(t => ({ text: t, source: 'birthday' }))
+      .concat(allAvailable.map(t => ({ text: t, source: 'all' })));
+
+    let resetBirthday = usedBirthday, resetAll = usedDare;
+    if(combined.length === 0 && (birthdayPool.length > 0 || allPool.length > 0)){
+      // כולם נבחרו כבר - מתחילים סבב חדש
+      resetBirthday = [];
+      resetAll = [];
+      combined = birthdayPool.map(t => ({ text: t, source: 'birthday' }))
+        .concat(allPool.map(t => ({ text: t, source: 'all' })));
+    }
+
+    if(combined.length === 0) return { item: null, source: null, usedBirthday: resetBirthday, usedAll: resetAll };
+
+    const chosen = combined[Math.floor(Math.random() * combined.length)];
+    if(chosen.source === 'birthday') resetBirthday = resetBirthday.concat([chosen.text]);
+    else resetAll = resetAll.concat([chosen.text]);
+
+    return { item: chosen.text, source: chosen.source, usedBirthday: resetBirthday, usedAll: resetAll };
+  }
+
+  // שלב 2: אחרי שהבקבוק נוחת - בוחרים שאלה מהמאגר (זה קובע למי היא מיועדת), ואז מריצים גלגל שמות מתאים
+  async function proceedAfterBottle(currentQuestion, roomRef){
     document.getElementById('hostTodCategoryLine').textContent = currentQuestion.spinResult === 'truth' ? '🟢 נחת על אמת!' : '🔴 נחת על חובה!';
     document.getElementById('hostTodCategoryLine').style.display = 'block';
     document.querySelector('#hostTodScreen .bottle-label-' + (currentQuestion.spinResult === 'truth' ? 'top' : 'bottom')).classList.add('landed');
     playSound('tada');
 
-    // שולפים מצב עדכני של המאגרים כדי לא לחזור על שאלות שכבר נבחרו בסבבים קודמים
-    let freshRoom = room;
     try{
       const docSnap = await roomRef.get();
-      freshRoom = docSnap.data();
-    }catch(e){ console.error(e); }
+      const room = docSnap.data();
+      const isTruth = currentQuestion.spinResult === 'truth';
+      const birthdayPool = isTruth ? (room.truthBirthdayPool || []) : (room.dareBirthdayPool || []);
+      const allPool = isTruth ? (room.truthAllPool || []) : (room.dareAllPool || []);
+      const usedBirthdayKey = isTruth ? 'usedTruthBirthdayPrompts' : 'usedDareBirthdayPrompts';
+      const usedAllKey = isTruth ? 'usedTruthAllPrompts' : 'usedDareAllPrompts';
+      const usedBirthday = room[usedBirthdayKey] || [];
+      const usedAll = room[usedAllKey] || [];
 
-    const picked = pickTodQuestion(freshRoom, currentQuestion.spinResult);
-    currentQuestion.text = picked.text;
-    currentQuestion.questionTarget = picked.questionTarget;
+      const picked = pickTodPromptWithSource(birthdayPool, allPool, usedBirthday, usedAll);
 
-    const usedUpdate = {};
-    usedUpdate[picked.usedKey] = picked.newUsedList;
+      currentQuestion.text = picked.item || (isTruth ? 'לא הוכנו שאלות אמת - הוסיפו במאגר!' : 'לא הוכנו משימות חובה - הוסיפו במאגר!');
+      currentQuestion.target = picked.source || 'all';
 
-    const allPlayers = freshRoom.players || room.players || [];
-    const birthdayNames = freshRoom.birthdayNames || room.birthdayNames || [];
-    let pool = allPlayers;
-    if(picked.questionTarget === 'celebrant'){
-      const filtered = allPlayers.filter(p => birthdayNames.includes(p.name));
-      pool = filtered.length > 0 ? filtered : allPlayers;
-    } else {
-      const filtered = allPlayers.filter(p => !birthdayNames.includes(p.name));
-      pool = filtered.length > 0 ? filtered : allPlayers;
-    }
+      const usedUpdate = {};
+      usedUpdate[usedBirthdayKey] = picked.usedBirthday;
+      usedUpdate[usedAllKey] = picked.usedAll;
 
-    if(pool.length === 0){
+      const allPlayers = room.players || [];
+      const birthdayNames = room.birthdayNames || [];
+      let pool = allPlayers;
+      if(currentQuestion.target === 'birthday'){
+        const filtered = allPlayers.filter(p => birthdayNames.includes(p.name));
+        pool = filtered.length > 0 ? filtered : allPlayers;
+      } else {
+        const filtered = allPlayers.filter(p => !birthdayNames.includes(p.name));
+        pool = filtered.length > 0 ? filtered : allPlayers;
+      }
+
+      if(pool.length === 0){
+        await roomRef.update(Object.assign({ currentQuestion: currentQuestion }, usedUpdate));
+        await revealTodFinal(currentQuestion, roomRef);
+        return;
+      }
+
+      const { winnerIndex, rotation } = pickWheelWinnerAndRotation(pool);
+      currentQuestion.wheelWinner = pool[winnerIndex].name;
+      currentQuestion.wheelWinnerAvatar = pool[winnerIndex].avatar || pickAvatarForName(pool[winnerIndex].name);
+      currentQuestion.wheelRotation = rotation;
+      currentQuestion.wheelPlayersSnapshot = pool.map(p => ({ name: p.name, avatar: p.avatar || pickAvatarForName(p.name) }));
+
       await roomRef.update(Object.assign({ currentQuestion: currentQuestion }, usedUpdate));
-      await revealTodPrompt(currentQuestion, roomRef);
-      return;
+
+      setTimeout(() => {
+        const discEl = document.getElementById('hostTodWheelDisc');
+        renderWheelDisc(discEl, pool);
+        document.getElementById('hostTodWheelWinnerName').textContent = '';
+        document.getElementById('hostTodWheelStage').style.display = 'flex';
+        spinWheelDisc(discEl, rotation);
+        playSound('spin');
+
+        setTimeout(async () => {
+          document.getElementById('hostTodWheelWinnerName').textContent = currentQuestion.wheelWinnerAvatar + ' ' + currentQuestion.wheelWinner + ' 🎉';
+          playSound('tada');
+          fireConfetti();
+          setTimeout(async () => { await revealTodFinal(currentQuestion, roomRef); }, 1200);
+        }, 4200);
+      }, 900);
+    }catch(e){
+      console.error(e);
     }
-
-    const { winnerIndex, rotation } = pickWheelWinnerAndRotation(pool);
-    currentQuestion.wheelWinner = pool[winnerIndex].name;
-    currentQuestion.wheelWinnerAvatar = pool[winnerIndex].avatar || pickAvatarForName(pool[winnerIndex].name);
-    currentQuestion.wheelRotation = rotation;
-    currentQuestion.wheelPlayersSnapshot = pool.map(p => ({ name: p.name, avatar: p.avatar || pickAvatarForName(p.name) }));
-    await roomRef.update(Object.assign({ currentQuestion: currentQuestion }, usedUpdate));
-
-    setTimeout(() => {
-      const discEl = document.getElementById('hostTodWheelDisc');
-      renderWheelDisc(discEl, pool);
-      document.getElementById('hostTodWheelWinnerName').textContent = '';
-      document.getElementById('hostTodWheelStage').style.display = 'flex';
-      spinWheelDisc(discEl, rotation);
-      playSound('spin');
-
-      setTimeout(async () => {
-        document.getElementById('hostTodWheelWinnerName').textContent = currentQuestion.wheelWinnerAvatar + ' ' + currentQuestion.wheelWinner + ' 🎉';
-        playSound('tada');
-        fireConfetti();
-        setTimeout(async () => { await revealTodPrompt(currentQuestion, roomRef); }, 1200);
-      }, 4200);
-    }, 900);
   }
 
-  // שלב 3: חשיפת השאלה/משימה שכבר נבחרה בשלב 2
-  async function revealTodPrompt(currentQuestion, roomRef){
+  // שלב 3: חשיפת השאלה/משימה הסופית (כבר נבחרה בשלב 2)
+  async function revealTodFinal(currentQuestion, roomRef){
     try{
       currentQuestion.revealed = true;
       await roomRef.update({ currentQuestion: currentQuestion });
@@ -2298,7 +2250,7 @@
         const icon = typeIcons[q.type] || '📝';
         const mediaIcon = q.mediaUrl ? ' 🖼️' : '';
         const wheelIcon = (q.type === 'open' && q.wheelEnabled) ? ' 🎡' : '';
-        const birthdayIcon = q.type === 'open' && q.target === 'birthday' ? ' 🎂' : '';
+        const birthdayIcon = (q.type === 'open' || q.type === 'tod') && q.target === 'birthday' ? ' 🎂' : '';
 
         const posRow = document.createElement('div');
         posRow.style.display = 'flex';
@@ -2453,7 +2405,7 @@
     return { winnerIndex: winnerIndex, rotation: rotation };
   }
 
-  const WHEEL_COLORS = ['#F0C46E', '#FF6FA0', '#B5478F', '#8B2F6B', '#E8A94A'];
+  const WHEEL_COLORS = ['#F0B429', '#E8449A', '#7A4FA3', '#C9A9DE'];
 
   function renderWheelDisc(discEl, players){
     const n = players.length;
@@ -2759,7 +2711,7 @@
   function colorForWord(word){
     if(!cloudWordColorMap[word]){
       const hue = (cloudColorCounter * 137.508) % 360; // זווית הזהב - מפזר גוונים באופן שווה ותמיד שונה
-      cloudWordColorMap[word] = 'hsl(' + Math.round(hue) + ', 75%, 72%)';
+      cloudWordColorMap[word] = 'hsl(' + Math.round(hue) + ', 62%, 45%)';
       cloudColorCounter++;
     }
     return cloudWordColorMap[word];
@@ -2839,7 +2791,7 @@
 
   // ===== קונפטי =====
   function fireConfetti(){
-    const colors = ['#F0C46E', '#FF6FA0', '#FFE3AB', '#B5478F', '#FFD166'];
+    const colors = ['#F0A8C0', '#C98FCB', '#F7C6D9', '#B584C4', '#FFD166'];
     for(let i = 0; i < 40; i++){
       const piece = document.createElement('div');
       piece.className = 'confetti-piece';
