@@ -80,7 +80,54 @@
   .screen.active{ display:block; }
 
   /* ---- Landing ---- */
-  #landing{ text-align:center; }
+  #landing{
+    text-align:center;
+    position:relative;
+    padding: 34px 18px 24px;
+    border-radius: 26px;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 15% 12%, rgba(246,200,96,0.14) 0%, transparent 24%),
+      radial-gradient(circle at 85% 12%, rgba(246,200,96,0.14) 0%, transparent 24%),
+      linear-gradient(165deg, var(--card-1) 0%, var(--card-2) 100%);
+    border: 1.5px solid var(--card-border);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 50px rgba(246,200,96,0.1);
+  }
+  .landing-sound{
+    position:absolute;
+    top:14px; left:14px;
+    width:36px; height:36px;
+    border-radius:50%;
+    background: var(--surface-strong);
+    border: 1.5px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.1rem;
+    cursor:pointer;
+    z-index:2;
+  }
+  .landing-deco{
+    position:absolute;
+    font-size:2.4rem;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.4));
+    pointer-events:none;
+    z-index:1;
+  }
+  .landing-deco.heart-left{ bottom:14px; left:6px; transform: rotate(-12deg); }
+  .landing-deco.heart-right{ top:16px; right:10px; transform: rotate(14deg); font-size:1.9rem; }
+  .landing-deco.gift-right{ bottom:10px; right:8px; transform: rotate(8deg); }
+  .landing-content{ position:relative; z-index:2; }
+  .landing-spotlight{
+    position:absolute;
+    top:-30px; width:70px; height:120px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.16), transparent);
+    filter: blur(4px);
+    pointer-events:none;
+    z-index:1;
+  }
+  .landing-spotlight.l{ left:20%; transform: rotate(18deg); }
+  .landing-spotlight.r{ right:20%; transform: rotate(-18deg); }
   .wheel-mark{
     width:96px; height:96px;
     margin:0 auto 18px;
@@ -404,30 +451,33 @@
     width:100%;
     min-height: 56px;
     padding: 14px 12px;
-    border-radius: 18px;
-    border: 1.5px solid var(--line);
-    background: var(--surface-strong);
-    color: var(--ink);
+    border-radius: 16px;
+    border: none;
+    background: var(--cream);
+    color: #3a1030;
     font-family:'Rubik', sans-serif;
-    font-weight:600;
-    font-size:0.98rem;
+    font-weight:700;
+    font-size:0.96rem;
     line-height:1.3;
     margin-bottom: 0;
     cursor:pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    transition: transform .12s ease, box-shadow .12s ease;
   }
   .answer-btn:active{ transform: scale(0.98); }
   .answer-btn.correct{
-    background: linear-gradient(135deg, rgba(255,61,148,0.32), rgba(184,31,102,0.42));
-    border: 2px solid var(--pink);
+    background: linear-gradient(135deg, var(--pink), var(--pink-deep));
     color: #fff;
-    box-shadow: 0 0 18px rgba(255,61,148,0.5);
+    box-shadow: 0 0 18px rgba(255,61,148,0.55);
   }
   .answer-btn.wrong{
-    background: var(--danger-bg);
-    border-color: var(--pink);
+    background: rgba(255,61,148,0.18);
+    color: var(--ink-soft);
   }
   .answer-btn.chosen{
-    box-shadow: 0 0 0 3px var(--gold) inset;
+    background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+    color: #fff;
+    box-shadow: 0 0 0 3px var(--gold) inset, 0 0 18px rgba(255,61,148,0.55);
   }
   .progress-line{
     text-align:center;
@@ -477,7 +527,30 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    padding: 10px 0 6px;
+    padding: 22px 10px 16px;
+    position:relative;
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(246,200,96,0.16) 0%, transparent 22%),
+      radial-gradient(circle at 85% 20%, rgba(255,61,148,0.18) 0%, transparent 22%),
+      radial-gradient(circle at 20% 85%, rgba(255,61,148,0.14) 0%, transparent 20%),
+      radial-gradient(circle at 88% 82%, rgba(246,200,96,0.16) 0%, transparent 22%),
+      radial-gradient(circle at 50% 92%, rgba(194,51,138,0.18) 0%, transparent 30%),
+      linear-gradient(165deg, var(--card-1) 0%, var(--card-2) 100%);
+    overflow:hidden;
+  }
+  .wheel-stage::before{
+    /* נצנוצי קונפטי מפוזרים מסביב לגלגל */
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      radial-gradient(rgba(255,255,255,0.9) 1.5px, transparent 1.5px),
+      radial-gradient(var(--gold) 2px, transparent 2px),
+      radial-gradient(var(--pink) 2px, transparent 2px);
+    background-size: 46px 46px, 90px 90px, 110px 110px;
+    background-position: 6px 8px, 20px 60px, 70px 20px;
+    opacity:0.55;
+    pointer-events:none;
   }
   .wheel-pointer{
     width: 26px; height: 34px;
@@ -485,18 +558,25 @@
     clip-path: polygon(50% 100%, 0% 32%, 14% 0%, 86% 0%, 100% 32%);
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.55));
     margin-bottom: -8px;
-    z-index:3;
+    z-index:5;
   }
   .wheel-outer{
     width: 260px; height: 260px;
     border-radius:50%;
-    border: 9px solid var(--gold);
-    box-shadow: 0 0 0 2px var(--gold-deep), 0 0 26px rgba(246,200,96,0.5), 0 16px 36px rgba(0,0,0,0.55);
+    border: 10px solid var(--gold);
+    box-shadow:
+      0 0 0 2px var(--gold-deep),
+      0 0 0 15px var(--card-2),
+      0 0 0 17px var(--gold-deep),
+      0 0 30px rgba(246,200,96,0.55),
+      0 16px 36px rgba(0,0,0,0.55);
     position:relative;
     overflow:hidden;
     background: var(--card-2);
+    z-index:2;
   }
   .wheel-outer::before{
+    /* חוגת קווי זהב עדינה סביב הגלגל */
     content:"";
     position:absolute;
     inset:0;
@@ -506,6 +586,19 @@
     mask: radial-gradient(circle, transparent 87%, #000 90%, #000 97%, transparent 99%);
     pointer-events:none;
     z-index:3;
+  }
+  .wheel-outer::after{
+    /* "נורות" זהב מסביב לחישוק החיצוני */
+    content:"";
+    position:absolute;
+    inset:-15px;
+    border-radius:50%;
+    background-image: repeating-conic-gradient(var(--gold-light) 0deg 2deg, transparent 2deg 12deg);
+    -webkit-mask: radial-gradient(circle, transparent 92%, #000 94%, #000 97%, transparent 99%);
+    mask: radial-gradient(circle, transparent 92%, #000 94%, #000 97%, transparent 99%);
+    box-shadow: 0 0 10px rgba(246,200,96,0.6);
+    pointer-events:none;
+    z-index:1;
   }
   .wheel-disc{
     width:100%; height:100%;
@@ -548,6 +641,8 @@
     margin-top: 18px;
     color: var(--ink-soft);
     font-size:0.95rem;
+    position:relative;
+    z-index:2;
   }
   .wheel-winner-name{
     font-family:'Rubik', sans-serif;
@@ -556,6 +651,8 @@
     color: var(--gold-light);
     filter: drop-shadow(0 0 14px rgba(240,196,110,0.3));
     margin-top: 4px;
+    position:relative;
+    z-index:2;
   }
   .winner-badge-wrap{
     display:flex;
@@ -590,8 +687,8 @@
   /* ---- Truth or Dare bottle ---- */
   .bottle-dial{
     position:relative;
-    width:220px;
-    height:220px;
+    width:150px;
+    height:150px;
     margin:10px auto 0;
     border-radius:50%;
     background: radial-gradient(circle, var(--card-1) 0%, var(--card-2) 100%);
@@ -600,6 +697,15 @@
     display:flex;
     align-items:center;
     justify-content:center;
+    transition: opacity 0.4s ease, transform 0.4s ease, height 0.4s ease, margin 0.4s ease;
+    overflow:visible;
+  }
+  .bottle-dial.tod-hidden{
+    opacity:0;
+    transform: scale(0.6);
+    height:0;
+    margin-top:0;
+    pointer-events:none;
   }
   .bottle-label{
     position:absolute;
@@ -607,11 +713,12 @@
     transform:translateX(-50%);
     font-family:'Rubik', sans-serif;
     font-weight:800;
-    font-size:1.05rem;
+    font-size:0.92rem;
     color: var(--gold-light);
     padding: 4px 14px;
     border-radius: 999px;
     transition: all 0.3s ease;
+    z-index:5;
   }
   .bottle-label.landed{
     background: linear-gradient(135deg, var(--gold), var(--pink));
@@ -619,14 +726,14 @@
     transform: translateX(-50%) scale(1.25);
     box-shadow: 0 4px 14px rgba(0,0,0,0.4);
   }
-  .bottle-label-top{ top:12px; }
-  .bottle-label-bottom{ bottom:12px; }
+  .bottle-label-top{ top:10px; }
+  .bottle-label-bottom{ bottom:10px; }
   .bottle-shape{
     position:relative;
-    width: 36px;
-    height: 96px;
+    width: 24px;
+    height: 64px;
     margin: 0 auto;
-    border-radius: 15px 15px 11px 11px;
+    border-radius: 10px 10px 8px 8px;
     background:
       linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 22%, transparent 40%),
       linear-gradient(160deg, var(--gold-light) 0%, var(--gold) 55%, var(--pink-deep) 100%);
@@ -637,10 +744,10 @@
     /* צוואר הבקבוק - הקצה שמצביע בבירור על אמת/חובה */
     content:"";
     position:absolute;
-    top:-38px; left:50%;
+    top:-26px; left:50%;
     transform:translateX(-50%);
-    width:15px; height:40px;
-    border-radius: 7px 7px 3px 3px;
+    width:10px; height:27px;
+    border-radius: 5px 5px 2px 2px;
     background: linear-gradient(160deg, var(--gold-light), var(--gold) 70%, var(--gold-deep));
     box-shadow: 0 0 10px rgba(246,200,96,0.5);
   }
@@ -648,10 +755,10 @@
     /* פקק */
     content:"";
     position:absolute;
-    top:-46px; left:50%;
+    top:-31px; left:50%;
     transform:translateX(-50%);
-    width:21px; height:11px;
-    border-radius: 4px;
+    width:14px; height:8px;
+    border-radius: 3px;
     background: var(--pink);
     box-shadow: 0 0 10px rgba(255,61,148,0.65);
   }
@@ -801,6 +908,13 @@
     color: var(--gold-light);
     filter: drop-shadow(0 0 16px rgba(246,200,96,0.45));
   }
+  #hostTodResult, #playerTodResult{
+    background: linear-gradient(165deg, rgba(246,200,96,0.10), rgba(255,61,148,0.08));
+    border: 1.5px solid var(--card-border);
+    border-radius: 20px;
+    padding: 20px 18px;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.35), inset 0 0 20px rgba(246,200,96,0.08);
+  }
 
   /* ---- Confetti ---- */
   .confetti-piece{
@@ -920,11 +1034,23 @@
   </div>
 
   <div id="landing" class="screen">
-    <img src="default-image.jpeg" alt="צוף ורותם" style="width:100%; max-width:280px; border-radius:20px; margin-bottom:22px; box-shadow:0 10px 30px rgba(91,44,70,0.2);">
-    <button class="btn btn-primary" onclick="goTo('hostCreate')">פתח חדר</button>
-    <button class="btn btn-secondary" onclick="goTo('playerJoin')">הצטרף למשחק</button>
-    <button class="btn btn-ghost" id="resumeRoomBtn" onclick="resumeLastRoom()" style="display:none;"></button>
-    <button class="btn btn-ghost" id="soundToggleBtn" onclick="toggleSound()">🔊 צלילים פועלים</button>
+    <div class="landing-spotlight l"></div>
+    <div class="landing-spotlight r"></div>
+    <button class="landing-sound" id="soundToggleBtn" onclick="toggleSound()" title="השתקה/הפעלה">🔊</button>
+    <div class="landing-deco heart-left">💗🎈</div>
+    <div class="landing-deco heart-right">✨</div>
+    <div class="landing-deco gift-right">🎁</div>
+    <div class="landing-content">
+      <h1 class="title">רותם &amp; צוף</h1>
+      <div class="subtitle">משחק יום ההולדת</div>
+      <button class="btn btn-primary" onclick="goTo('hostCreate')">התחלת המשחק</button>
+      <button class="btn btn-ghost" onclick="toggleHowToPlay()">איך משחקים?</button>
+      <div id="howToPlayBox" style="display:none; margin-top:16px; text-align:right; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 16px; font-size:0.9rem; color:var(--ink-soft); line-height:1.6;">
+        מי שפותח/ת את המשחק לוחצ/ת על "התחלת המשחק" ומקבלת קוד חדר. שאר המשתתפות מצטרפות לחדר לפי הקוד ממסך "הצטרפות למשחק" ומשם המשחק מתנהל אוטומטית לכולן, מכל טלפון.
+      </div>
+      <button class="btn btn-secondary" onclick="goTo('playerJoin')">הצטרפות למשחק (למשתתפות)</button>
+      <button class="btn btn-ghost" id="resumeRoomBtn" onclick="resumeLastRoom()" style="display:none;"></button>
+    </div>
   </div>
 
   <!-- מסך מנהל: יצירת חדר -->
@@ -1317,13 +1443,18 @@
 
   function updateSoundBtn(){
     const btn = document.getElementById('soundToggleBtn');
-    if(btn) btn.textContent = soundEnabled ? '🔊 צלילים פועלים' : '🔇 צלילים כבויים';
+    if(btn) btn.textContent = soundEnabled ? '🔊' : '🔇';
   }
 
   function toggleSound(){
     soundEnabled = !soundEnabled;
     localStorage.setItem('soundEnabled', soundEnabled ? 'on' : 'off');
     updateSoundBtn();
+  }
+
+  function toggleHowToPlay(){
+    const box = document.getElementById('howToPlayBox');
+    if(box) box.style.display = (box.style.display === 'none') ? 'block' : 'none';
   }
 
   function getAudioCtx(){
@@ -2126,6 +2257,7 @@
     document.getElementById('todNextBtn').style.display = 'none';
     document.querySelector('#hostTodScreen .bottle-label-top').classList.remove('landed');
     document.querySelector('#hostTodScreen .bottle-label-bottom').classList.remove('landed');
+    document.querySelector('#hostTodScreen .bottle-dial').classList.remove('tod-hidden');
 
     const bottleEl = document.getElementById('hostBottle');
     bottleEl.style.transition = 'none';
@@ -2149,9 +2281,10 @@
   }
 
   async function proceedAfterBottle(currentQuestion, room, roomRef){
-    document.getElementById('hostTodCategoryLine').textContent = currentQuestion.spinResult === 'truth' ? '🟢 נחת על אמת!' : '🔴 נחת על חובה!';
+    document.getElementById('hostTodCategoryLine').textContent = currentQuestion.spinResult === 'truth' ? '🟢 נבחר: אמת!' : '🔴 נבחר: חובה!';
     document.getElementById('hostTodCategoryLine').style.display = 'block';
     document.querySelector('#hostTodScreen .bottle-label-' + (currentQuestion.spinResult === 'truth' ? 'top' : 'bottom')).classList.add('landed');
+    document.querySelector('#hostTodScreen .bottle-dial').classList.add('tod-hidden');
     playSound('tada');
 
     try{
@@ -2532,7 +2665,8 @@
   // ===== מדיה: תמונה / וידאו / יוטיוב / קול =====
   function renderMediaInto(containerEl, url){
     containerEl.innerHTML = '';
-    const finalUrl = url || 'default-image.jpeg';
+    if(!url){ return; } // אין מדיה לשאלה הזו - לא מציגים כלום (בלי תמונת ברירת מחדל)
+    const finalUrl = url;
     const wrap = document.createElement('div');
     wrap.className = 'question-media';
 
@@ -2563,10 +2697,17 @@
       audio.style.width = '100%';
       wrap.style.background = 'transparent';
       wrap.appendChild(audio);
-    } else if(/\.(mp4|webm|mov)(\?.*)?$/i.test(finalUrl)){
+    } else if(/\.(mp4|webm|mov)(\?.*)?$/i.test(finalUrl) || finalUrl.startsWith('data:video')){
+      // וידאו רגיל (קישור ישיר או קובץ שהועלה כ-data URL) - תיקון: playsinline+preload
+      // כדי שהפריים הראשון יוצג מיד ולא ייראה מסך שחור עד שלוחצים נגן
       const video = document.createElement('video');
       video.src = finalUrl;
       video.controls = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.preload = 'metadata';
+      video.style.objectFit = 'contain';
+      video.style.background = '#000';
       wrap.appendChild(video);
     } else {
       const img = document.createElement('img');
@@ -2588,7 +2729,7 @@
     return { winnerIndex: winnerIndex, rotation: rotation };
   }
 
-  const WHEEL_COLORS = ['#F0C46E', '#FF6FA0', '#B5478F', '#8B2F6B', '#E8A94A'];
+  const WHEEL_COLORS = ['#f6e6c4', '#7b3a8a', '#f6e6c4', '#c23a8a', '#f6e6c4', '#5c2568'];
 
   // בונה את תגית הזוכה/ת בגלגל: תמונת אווטאר עגולה עם מסגרת זהב + סרט ורוד עם השם
   function renderWinnerBadge(elId, avatar, name){
@@ -2622,10 +2763,16 @@
 
     players.forEach((p, i) => {
       const centerAngle = i * sliceAngle + sliceAngle / 2;
+      const color = WHEEL_COLORS[i % WHEEL_COLORS.length];
+      const isCream = color === '#f6e6c4';
       const label = document.createElement('div');
       label.className = 'wheel-label';
       label.textContent = (p.avatar || pickAvatarForName(p.name)) + ' ' + p.name;
       label.style.transform = 'rotate(' + centerAngle + 'deg) translateX(20px)';
+      if(isCream){
+        label.style.color = '#3a1030';
+        label.style.textShadow = '0 1px 2px rgba(255,255,255,0.35)';
+      }
       discEl.appendChild(label);
     });
   }
@@ -3117,6 +3264,7 @@
           document.getElementById('playerTodResult').style.display = 'none';
           document.querySelector('#playerTodScreen .bottle-label-top').classList.remove('landed');
           document.querySelector('#playerTodScreen .bottle-label-bottom').classList.remove('landed');
+          document.querySelector('#playerTodScreen .bottle-dial').classList.remove('tod-hidden');
 
           const bottleEl = document.getElementById('playerBottle');
           bottleEl.style.transition = 'none';
@@ -3128,9 +3276,10 @@
           playSound('spin');
 
           setTimeout(() => {
-            document.getElementById('playerTodCategoryLine').textContent = room.currentQuestion.spinResult === 'truth' ? '🟢 נחת על אמת!' : '🔴 נחת על חובה!';
+            document.getElementById('playerTodCategoryLine').textContent = room.currentQuestion.spinResult === 'truth' ? '🟢 נבחר: אמת!' : '🔴 נבחר: חובה!';
             document.getElementById('playerTodCategoryLine').style.display = 'block';
             document.querySelector('#playerTodScreen .bottle-label-' + (room.currentQuestion.spinResult === 'truth' ? 'top' : 'bottom')).classList.add('landed');
+            document.querySelector('#playerTodScreen .bottle-dial').classList.add('tod-hidden');
             playSound('tada');
           }, dur + 300);
         }
