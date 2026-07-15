@@ -379,25 +379,36 @@
     border-radius: 999px;
     margin-bottom: 16px;
   }
+  #pqMcArea, #mcHostArea{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
   .answer-btn{
-    display:block;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
     width:100%;
-    text-align:right;
-    padding: 16px 18px;
-    border-radius: 14px;
-    border: 2px solid var(--line);
-    background: var(--surface);
+    min-height: 56px;
+    padding: 14px 12px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line);
+    background: var(--surface-strong);
     color: var(--ink);
     font-family:'Outfit', sans-serif;
     font-weight:600;
-    font-size:1.02rem;
-    margin-bottom: 10px;
+    font-size:0.98rem;
+    line-height:1.3;
+    margin-bottom: 0;
     cursor:pointer;
   }
   .answer-btn:active{ transform: scale(0.98); }
   .answer-btn.correct{
-    background: var(--success-bg);
-    border-color: var(--success);
+    background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+    border-color: var(--pink);
+    color: #fff;
+    box-shadow: 0 0 18px rgba(255,61,148,0.5);
   }
   .answer-btn.wrong{
     background: var(--danger-bg);
@@ -457,21 +468,32 @@
     padding: 10px 0 6px;
   }
   .wheel-pointer{
-    width:0; height:0;
-    border-left: 14px solid transparent;
-    border-right: 14px solid transparent;
-    border-top: 22px solid var(--gold-light);
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
-    margin-bottom: -4px;
-    z-index:2;
+    width: 26px; height: 34px;
+    background: linear-gradient(160deg, var(--gold-light), var(--gold) 65%, var(--gold-deep));
+    clip-path: polygon(50% 100%, 0% 32%, 14% 0%, 86% 0%, 100% 32%);
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.55));
+    margin-bottom: -8px;
+    z-index:3;
   }
   .wheel-outer{
     width: 260px; height: 260px;
     border-radius:50%;
-    border: 6px solid var(--cream);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 3px rgba(240,196,110,0.25);
+    border: 9px solid var(--gold);
+    box-shadow: 0 0 0 2px var(--gold-deep), 0 0 26px rgba(246,200,96,0.5), 0 16px 36px rgba(0,0,0,0.55);
     position:relative;
     overflow:hidden;
+    background: var(--card-2);
+  }
+  .wheel-outer::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    background-image: repeating-conic-gradient(rgba(255,244,214,0.95) 0deg 3deg, transparent 3deg 16deg);
+    -webkit-mask: radial-gradient(circle, transparent 87%, #000 90%, #000 97%, transparent 99%);
+    mask: radial-gradient(circle, transparent 87%, #000 90%, #000 97%, transparent 99%);
+    pointer-events:none;
+    z-index:3;
   }
   .wheel-disc{
     width:100%; height:100%;
@@ -496,12 +518,18 @@
   .wheel-hub{
     position:absolute;
     top:50%; left:50%;
-    width:36px; height:36px;
+    width:50px; height:50px;
     transform:translate(-50%,-50%);
-    background: var(--cream);
+    background: radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold) 55%, var(--gold-deep));
     border-radius:50%;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
-    z-index:2;
+    box-shadow: 0 0 0 4px var(--card-2), 0 0 20px rgba(246,200,96,0.65), 0 3px 8px rgba(0,0,0,0.4);
+    z-index:4;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.4rem;
+    color:#3a1030;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.4);
   }
   .wheel-caption{
     text-align:center;
@@ -516,6 +544,35 @@
     color: var(--gold-light);
     filter: drop-shadow(0 0 14px rgba(240,196,110,0.3));
     margin-top: 4px;
+  }
+  .winner-badge-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin-top:6px;
+    animation: reveal-pop 0.5s cubic-bezier(0.17,0.67,0.3,1.3);
+  }
+  .winner-avatar-circle{
+    width:68px; height:68px;
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.25), transparent 60%), var(--card-1);
+    border: 3px solid var(--gold);
+    box-shadow: 0 0 0 3px var(--card-2), 0 0 24px rgba(246,200,96,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:2.1rem;
+    margin-bottom:10px;
+  }
+  .winner-ribbon{
+    background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+    color:#fff;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:1.15rem;
+    padding:7px 24px;
+    border-radius:999px;
+    box-shadow: 0 6px 16px rgba(184,31,102,0.5);
   }
 
   /* ---- Truth or Dare bottle ---- */
@@ -554,32 +611,37 @@
   .bottle-label-bottom{ bottom:12px; }
   .bottle-shape{
     position:relative;
-    width: 12px;
-    height: 140px;
+    width: 36px;
+    height: 96px;
+    margin: 0 auto;
+    border-radius: 15px 15px 11px 11px;
+    background:
+      linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 22%, transparent 40%),
+      linear-gradient(160deg, var(--gold-light) 0%, var(--gold) 55%, var(--pink-deep) 100%);
+    box-shadow: 0 0 16px rgba(246,200,96,0.45), inset 0 0 14px rgba(255,255,255,0.18);
     transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-    background: linear-gradient(to bottom, var(--gold) 0%, var(--gold) 30%, var(--pink) 70%, var(--pink) 100%);
-    border-radius: 6px;
   }
   .bottle-shape::before{
+    /* צוואר הבקבוק - הקצה שמצביע בבירור על אמת/חובה */
     content:"";
     position:absolute;
-    top:-24px; left:50%;
+    top:-38px; left:50%;
     transform:translateX(-50%);
-    width:0; height:0;
-    border-left:15px solid transparent;
-    border-right:15px solid transparent;
-    border-bottom:28px solid var(--gold);
-    filter: drop-shadow(0 0 10px rgba(246,200,96,0.65));
+    width:15px; height:40px;
+    border-radius: 7px 7px 3px 3px;
+    background: linear-gradient(160deg, var(--gold-light), var(--gold) 70%, var(--gold-deep));
+    box-shadow: 0 0 10px rgba(246,200,96,0.5);
   }
   .bottle-shape::after{
+    /* פקק */
     content:"";
     position:absolute;
-    bottom:-11px; left:50%;
+    top:-46px; left:50%;
     transform:translateX(-50%);
-    width:22px; height:22px;
-    border-radius:50%;
+    width:21px; height:11px;
+    border-radius: 4px;
     background: var(--pink);
-    box-shadow: 0 0 12px rgba(255,61,148,0.6);
+    box-shadow: 0 0 10px rgba(255,61,148,0.65);
   }
 
   /* ---- Media in questions ---- */
@@ -659,16 +721,25 @@
 
   /* ---- Word cloud ---- */
   .cloud-box{
+    position:relative;
     min-height: 160px;
     display:flex;
     flex-wrap:wrap;
     align-items:center;
     justify-content:center;
     gap: 10px 14px;
-    padding: 16px;
+    padding: 22px 16px 16px;
     background: var(--surface);
-    border-radius: 16px;
+    border: 1.5px solid var(--card-border);
+    border-radius: 18px;
     margin-bottom: 14px;
+  }
+  .cloud-box::before{
+    content:"☁️";
+    position:absolute;
+    top:10px; left:14px;
+    font-size:1.1rem;
+    opacity:0.8;
   }
   .cloud-word{
     font-family:'Baloo 2', sans-serif;
@@ -695,9 +766,10 @@
 
   /* ---- Reveal answer ---- */
   .reveal-box{
-    background: var(--surface);
-    border-radius: 14px;
-    padding: 18px;
+    background: var(--surface-strong);
+    border: 1.5px solid var(--card-border);
+    border-radius: 18px;
+    padding: 20px 18px;
     text-align:center;
     margin-top: 10px;
     display:none;
@@ -712,9 +784,10 @@
   }
   .reveal-text{
     font-family:'Baloo 2', sans-serif;
-    font-size:1.25rem;
+    font-size:1.35rem;
     font-weight:700;
     color: var(--gold-light);
+    filter: drop-shadow(0 0 16px rgba(246,200,96,0.45));
   }
 
   /* ---- Confetti ---- */
@@ -939,7 +1012,7 @@
         <div class="wheel-pointer"></div>
         <div class="wheel-outer">
           <div class="wheel-disc" id="hostTodWheelDisc"></div>
-          <div class="wheel-hub"></div>
+          <div class="wheel-hub">★</div>
         </div>
         <div class="wheel-caption">מי יענה/תענה?</div>
         <div class="wheel-winner-name" id="hostTodWheelWinnerName"></div>
@@ -968,7 +1041,7 @@
         <div class="wheel-pointer"></div>
         <div class="wheel-outer">
           <div class="wheel-disc" id="playerTodWheelDisc"></div>
-          <div class="wheel-hub"></div>
+          <div class="wheel-hub">★</div>
         </div>
         <div class="wheel-caption">מי יענה/תענה?</div>
         <div class="wheel-winner-name" id="playerTodWheelWinnerName"></div>
@@ -1086,7 +1159,7 @@
         <div class="wheel-pointer"></div>
         <div class="wheel-outer">
           <div class="wheel-disc" id="hostWheelDisc"></div>
-          <div class="wheel-hub"></div>
+          <div class="wheel-hub">★</div>
         </div>
       </div>
       <div class="wheel-caption">הגלגל בוחר שחקן/ית...</div>
@@ -1102,7 +1175,7 @@
         <div class="wheel-pointer"></div>
         <div class="wheel-outer">
           <div class="wheel-disc" id="playerWheelDisc"></div>
-          <div class="wheel-hub"></div>
+          <div class="wheel-hub">★</div>
         </div>
       </div>
       <div class="wheel-caption">מי יזכה לענות?</div>
@@ -2110,13 +2183,13 @@
       setTimeout(() => {
         const discEl = document.getElementById('hostTodWheelDisc');
         renderWheelDisc(discEl, pool);
-        document.getElementById('hostTodWheelWinnerName').textContent = '';
+        renderWinnerBadge('hostTodWheelWinnerName', '', '');
         document.getElementById('hostTodWheelStage').style.display = 'flex';
         spinWheelDisc(discEl, rotation);
         playSound('spin');
 
         setTimeout(async () => {
-          document.getElementById('hostTodWheelWinnerName').textContent = currentQuestion.wheelWinnerAvatar + ' ' + currentQuestion.wheelWinner + ' 🎉';
+          renderWinnerBadge('hostTodWheelWinnerName', currentQuestion.wheelWinnerAvatar, currentQuestion.wheelWinner);
           playSound('tada');
           fireConfetti();
           setTimeout(async () => { await revealTodPrompt(currentQuestion, roomRef); }, 1200);
@@ -2503,15 +2576,33 @@
 
   const WHEEL_COLORS = ['#F0C46E', '#FF6FA0', '#B5478F', '#8B2F6B', '#E8A94A'];
 
+  // בונה את תגית הזוכה/ת בגלגל: תמונת אווטאר עגולה עם מסגרת זהב + סרט ורוד עם השם
+  function renderWinnerBadge(elId, avatar, name){
+    const el = document.getElementById(elId);
+    if(!el) return;
+    if(!name){ el.innerHTML = ''; return; }
+    el.innerHTML =
+      '<div class="winner-badge-wrap">' +
+        '<div class="winner-avatar-circle">' + (avatar || '🎉') + '</div>' +
+        '<div class="winner-ribbon">' + name + ' 🎉</div>' +
+      '</div>';
+  }
+
   function renderWheelDisc(discEl, players){
     const n = players.length;
     const sliceAngle = 360 / n;
     let gradientParts = [];
+    let dividerParts = [];
+    const dividerWidth = Math.min(1.4, sliceAngle * 0.06);
     for(let i = 0; i < n; i++){
       const color = WHEEL_COLORS[i % WHEEL_COLORS.length];
       gradientParts.push(color + ' ' + (i * sliceAngle) + 'deg ' + ((i + 1) * sliceAngle) + 'deg');
+      const boundary = i * sliceAngle;
+      dividerParts.push('transparent ' + boundary + 'deg', 'rgba(246,200,96,0.85) ' + boundary + 'deg', 'rgba(246,200,96,0.85) ' + (boundary + dividerWidth) + 'deg', 'transparent ' + (boundary + dividerWidth) + 'deg');
     }
-    discEl.style.background = 'conic-gradient(' + gradientParts.join(',') + ')';
+    discEl.style.background =
+      'conic-gradient(' + dividerParts.join(',') + '), ' +
+      'conic-gradient(' + gradientParts.join(',') + ')';
     discEl.style.transform = 'rotate(0deg)';
     discEl.innerHTML = '';
 
@@ -2575,13 +2666,13 @@
 
       const discEl = document.getElementById('hostWheelDisc');
       renderWheelDisc(discEl, pool);
-      document.getElementById('hostWheelWinnerName').textContent = '';
+      renderWinnerBadge('hostWheelWinnerName', '', '');
       goTo('hostWheel');
       spinWheelDisc(discEl, rotation);
       playSound('spin');
 
       setTimeout(async () => {
-        document.getElementById('hostWheelWinnerName').textContent = currentQuestion.wheelWinnerAvatar + ' ' + currentQuestion.wheelWinner + ' 🎉';
+        renderWinnerBadge('hostWheelWinnerName', currentQuestion.wheelWinnerAvatar, currentQuestion.wheelWinner);
         playSound('tada');
         fireConfetti();
         setTimeout(async () => {
@@ -2978,12 +3069,12 @@
           const players = room.currentQuestion.wheelPlayersSnapshot || [];
           const discEl = document.getElementById('playerWheelDisc');
           renderWheelDisc(discEl, players);
-          document.getElementById('playerWheelWinnerName').textContent = '';
+          renderWinnerBadge('playerWheelWinnerName', '', '');
           goTo('playerWheel');
           spinWheelDisc(discEl, room.currentQuestion.wheelRotation);
           playSound('spin');
           setTimeout(() => {
-            document.getElementById('playerWheelWinnerName').textContent = (room.currentQuestion.wheelWinnerAvatar || '') + ' ' + room.currentQuestion.wheelWinner + ' 🎉';
+            renderWinnerBadge('playerWheelWinnerName', room.currentQuestion.wheelWinnerAvatar, room.currentQuestion.wheelWinner);
             playSound('tada');
             fireConfetti();
           }, 4200);
@@ -3022,12 +3113,12 @@
           setTimeout(() => {
             const discEl = document.getElementById('playerTodWheelDisc');
             renderWheelDisc(discEl, players);
-            document.getElementById('playerTodWheelWinnerName').textContent = '';
+            renderWinnerBadge('playerTodWheelWinnerName', '', '');
             document.getElementById('playerTodWheelStage').style.display = 'flex';
             spinWheelDisc(discEl, room.currentQuestion.wheelRotation);
             playSound('spin');
             setTimeout(() => {
-              document.getElementById('playerTodWheelWinnerName').textContent = (room.currentQuestion.wheelWinnerAvatar || '') + ' ' + room.currentQuestion.wheelWinner + ' 🎉';
+              renderWinnerBadge('playerTodWheelWinnerName', room.currentQuestion.wheelWinnerAvatar, room.currentQuestion.wheelWinner);
               playSound('tada');
               fireConfetti();
             }, 4200);
